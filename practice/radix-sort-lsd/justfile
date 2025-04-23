@@ -1,0 +1,16 @@
+compile:
+    g++ radixlsd.cpp
+
+test1:
+    echo "5 5 4 3 2 1" | ./a.out
+
+test2:
+    echo "10 2 3 1 2 1 100 4 3 2 65" | ./a.out
+
+test3:
+    echo "10 13 5 10 4 3 33 21 18 9 11" | ./a.out
+
+test4:
+    echo "12 13 5 10 4 3 33 666666 21 18 9 11 13376942" | ./a.out
+
+test: compile test1 test2 test3 test4

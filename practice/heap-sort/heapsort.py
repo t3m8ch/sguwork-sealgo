@@ -4,9 +4,10 @@ import random
 def sift_down(a, v, n):
     while 2*v+1 < n:
         u = 2*v+1
-        if 2*v+2 < n and a[2*v+2] < a[2*v+1]:
-            u = 2*v+2
-        if a[u] < a[v]:
+        # Для изменения порядка сортировки нужно:
+        if u+1 < n and a[u+1] > a[u]:  # поменять знак во втором условии
+            u += 1
+        if a[u] > a[v]:                # и поменять знак здесь
             a[u], a[v] = a[v], a[u]
             v = u
         else:

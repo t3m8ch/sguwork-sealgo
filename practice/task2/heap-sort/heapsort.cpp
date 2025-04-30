@@ -5,7 +5,12 @@
 #include <chrono>
 
 // Эта функция "просеивает" узел дерева до тех пор, пока оно не нарушит свойство кучи.
-void siftDown(std::span<int> arr, int nodeIdx) {
+template<class T>
+requires requires (const T& a, const T& b) {
+   { a < b } -> std::convertible_to<bool>;
+   { a > b } -> std::convertible_to<bool>;
+}
+void siftDown(std::span<T> arr, int nodeIdx) {
     // Выполняем цикл до тех пор, пока у нас есть дочерние узлы
     while (2 * nodeIdx + 1 < arr.size()) {
         // Изначально выбираем левого потомка
@@ -28,15 +33,25 @@ void siftDown(std::span<int> arr, int nodeIdx) {
 }
 
 // Преобразовываем обычный массив в кучу
-void heapify(std::span<int> arr) {
+template<class T>
+requires requires (const T& a, const T& b) {
+   { a < b } -> std::convertible_to<bool>;
+   { a > b } -> std::convertible_to<bool>;
+}
+void heapify(std::span<T> arr) {
     for (int i = arr.size(); i >= 0; i--) {
         siftDown(arr, i);
     }
 }
 
 // Пирамидальная сортировка
-void heapsort(std::vector<int>& arr) {
-    std::span<int> arrSpan(arr);
+template<class T>
+requires requires (const T& a, const T& b) {
+   { a < b } -> std::convertible_to<bool>;
+   { a > b } -> std::convertible_to<bool>;
+}
+void heapsort(std::vector<T>& arr) {
+    std::span<T> arrSpan(arr);
 
     // Сначала мы преобразуем массив в кучу
     heapify(arrSpan);

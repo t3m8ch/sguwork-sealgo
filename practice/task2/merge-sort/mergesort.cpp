@@ -5,9 +5,14 @@
 // В основе сортировки слиянием находится, как ни странно, слияние.
 // Это операция, которая объединяет два отсортированных массива в один
 // отсортированный массив.
+template<class T>
+requires requires (const T& a, const T& b) {
+   { a < b } -> std::convertible_to<bool>;
+   { a > b } -> std::convertible_to<bool>;
+}
 void merge(
     // Массив, слева содержащий левый подмассив, справа содержащий правый.
-    std::vector<int>& arr,
+    std::vector<T>& arr,
 
     // Границы левого и правого подмассивов определяются тремя аргументами ниже:
     // [left; mid) и [mid; right)
@@ -34,8 +39,8 @@ void merge(
     // самом деле один раз мы аллоцируем место для самых больших подмассивов и это место
     // переиспользуем на каждый вызов merge, тем самым у нас будет лишь O(1) обращения к ОС
     // для аллокации памяти.
-    std::vector<int>& leftArr,
-    std::vector<int>& rightArr
+    std::vector<T>& leftArr,
+    std::vector<T>& rightArr
 ) {
     leftArr.resize(mid - left + 1);
     rightArr.resize(right - mid);
@@ -82,17 +87,22 @@ void merge(
 
 // Это перегрузка функции mergesort, которая будет вызываться рекурсивно.
 // Простым работягам-программистам следует применять перегрузку, описанную ниже)
+template<class T>
+requires requires (const T& a, const T& b) {
+   { a < b } -> std::convertible_to<bool>;
+   { a > b } -> std::convertible_to<bool>;
+}
 void mergesort(
     // Массив, который мы сортируем.
-    std::vector<int>& arr,
+    std::vector<T>& arr,
 
     // Левая и правая граница подмассива.
     size_t left,
     size_t right,
 
     // Смотреть описание аналогичных аргументов в функции merge.
-    std::vector<int>& leftArr,
-    std::vector<int>& rightArr
+    std::vector<T>& leftArr,
+    std::vector<T>& rightArr
 ) {
     if (left >= right) {
         return;
@@ -115,12 +125,17 @@ void mergesort(
 // аллоцированием дополнительных векторов для двух подмассивов или с
 // передачей дополнительных аргументов для того, чтобы рекурсия работала,
 // эта перегрузка функции инкапсулирует за собой. Настоящий герой!
-void mergesort(std::vector<int>& arr) {
+template<class T>
+requires requires (const T& a, const T& b) {
+   { a < b } -> std::convertible_to<bool>;
+   { a > b } -> std::convertible_to<bool>;
+}
+void mergesort(std::vector<T>& arr) {
     // Смотреть описание последних двух аргументов функции merge.
-    std::vector<int> leftArr;
+    std::vector<T> leftArr;
     leftArr.reserve(arr.size() / 2);
 
-    std::vector<int> rightArr;
+    std::vector<T> rightArr;
     rightArr.reserve(arr.size() / 2 + 1);
 
     // сортируем массив

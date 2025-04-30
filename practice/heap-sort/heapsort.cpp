@@ -1,11 +1,12 @@
 #include <utility>
 #include <vector>
 #include <iostream>
+#include <span>
 
-void siftDown(std::vector<int>& arr, int nodeIdx, int n) {
-    while (2 * nodeIdx + 1 < n) {
+void siftDown(std::span<int> arr, int nodeIdx) {
+    while (2 * nodeIdx + 1 < arr.size()) {
         int childIdx = 2 * nodeIdx + 1;
-        if (childIdx + 1 < n && arr[childIdx + 1] > arr[childIdx]) {
+        if (childIdx + 1 < arr.size() && arr[childIdx + 1] > arr[childIdx]) {
             childIdx++;
         }
 
@@ -18,18 +19,19 @@ void siftDown(std::vector<int>& arr, int nodeIdx, int n) {
     }
 }
 
-void heapify(std::vector<int>& arr, int n) {
-    for (int i = n; i >= 0; i--) {
-        siftDown(arr, i, n);
+void heapify(std::span<int> arr) {
+    for (int i = arr.size(); i >= 0; i--) {
+        siftDown(arr, i);
     }
 }
 
-void heapsort(std::vector<int>& arr, int n) {
-    heapify(arr, n);
-    int curr_n = n;
-    for (int i = 0; i < n - 1; i++) {
-        std::swap(arr[0], arr[--curr_n]);
-        siftDown(arr, 0, curr_n);
+void heapsort(std::vector<int>& arr) {
+    std::span<int> arrSpan(arr);
+    heapify(arrSpan);
+    for (int i = 0; i < arr.size() - 1; i++) {
+        std::swap(arr[0], arr[arrSpan.size() - 1]);
+        arrSpan = arrSpan.first(arrSpan.size() - 1);
+        siftDown(arrSpan, 0);
     }
 }
 
@@ -49,7 +51,7 @@ int main() {
     }
 
     // сортируем массив
-    heapsort(arr, arr.size());
+    heapsort(arr);
 
     // выводим массив на экран
     for (int num : arr) {

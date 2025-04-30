@@ -1,66 +1,50 @@
-#include <algorithm>
-#include <vector>
 #include <iostream>
+#include <vector>
 
-// Сортировка слиянием является алгоритмом, использующий операцию сравнения,
-// поэтому мы наложим на шаблон ограничение, что он должен перегружать операторы сравнения
-template<class T>
-requires requires (const T& a, const T& b) {
-    { a < b } -> std::convertible_to<bool>;
-    { a > b } -> std::convertible_to<bool>;
-}
-void merge(
-    std::vector<T>& inputArr,
-    std::vector<T>& outputArr,
-    size_t left,
-    size_t mid,
-    size_t right
-) {
-    size_t it1 = 0;
-    size_t it2 = 0;
+void merge(std::vector<int>& arr, size_t left, size_t mid, size_t right) {
+    std::vector<int> leftArr(mid - left + 1);
+    std::vector<int> rightArr(right - mid);
 
-    outputArr.clear();
-    outputArr.resize(right - left);
+    for (size_t i = 0; i < leftArr.size(); i++) {
+        leftArr[i] = arr[left + i];
+    }
 
-    while ((left + it1 < mid) && (mid + it2 < right)) {
-        if (inputArr[left + it1] < inputArr[mid + it2]) {
-            outputArr[it1 + it2] = inputArr[left + it1];
-            it1++;
+    for (size_t i = 0; i < rightArr.size(); i++) {
+        rightArr[i] = arr[mid + 1 + i];
+    }
+
+    size_t i = 0;
+    size_t j = 0;
+    size_t k = left;
+
+    while (i < leftArr.size() && j < rightArr.size()) {
+        if (leftArr[i] <= rightArr[j]) {
+            arr[k++] = leftArr[i++];
         } else {
-            outputArr[it1 + it2] = inputArr[mid + it2];
-            it2++;
+            arr[k++] = rightArr[j++];
         }
     }
 
-    while (left + it1 < mid) {
-        std::cout << outputArr.size() << std::endl;
-        outputArr[it1 + it2] = inputArr[left + it1];
-        it1++;
+    while (i < leftArr.size()) {
+        arr[k++] = leftArr[i++];
     }
 
-    while (mid + it2 < right) {
-        outputArr[it1 + it2] = inputArr[mid + it2];
-        it2++;
-    }
-
-    for (size_t i = 0; i <= it1 + it2; i++) {
-        inputArr[left + i] = outputArr[i];
+    while (j < rightArr.size()) {
+        arr[k++] = rightArr[j++];
     }
 }
 
-template<class T>
-requires requires (const T& a, const T& b) {
-    { a < b } -> std::convertible_to<bool>;
-    { a > b } -> std::convertible_to<bool>;
-}
-void mergeSort(std::vector<T>& arr) {
-    std::vector<T> mergeResult;
-    mergeResult.reserve(arr.size());
-    for (size_t i = 0; i <= arr.size(); i *= i) {
-        for (size_t j = 0; j <= arr.size() - i; i += 2 * i) {
-            merge(arr, mergeResult, j, j + 1, std::min(j + 2 * i, arr.size()));
-        }
+void mergesort(std::vector<int>& arr, size_t left, size_t right) {
+    if (left >= right) {
+        return;
     }
+
+    size_t mid = left + (right - left) / 2;
+
+    mergesort(arr, left, mid);
+    mergesort(arr, mid + 1, right);
+
+    merge(arr, left, mid, right);
 }
 
 int main() {
@@ -79,7 +63,7 @@ int main() {
     }
 
     // сортируем массив
-    mergeSort(arr);
+    mergesort(arr, 0, arr.size() - 1);
 
     // выводим массив на экран
     for (int num : arr) {

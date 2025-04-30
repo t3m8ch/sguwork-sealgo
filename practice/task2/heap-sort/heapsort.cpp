@@ -3,31 +3,45 @@
 #include <iostream>
 #include <span>
 
+// Эта функция "просеивает" узел дерева до тех пор, пока оно не нарушит свойство кучи.
 void siftDown(std::span<int> arr, int nodeIdx) {
+    // Выполняем цикл до тех пор, пока у нас есть дочерние узлы
     while (2 * nodeIdx + 1 < arr.size()) {
+        // Изначально выбираем левого потомка
         int childIdx = 2 * nodeIdx + 1;
+
+        // Если правый потомок существует и больше левого, выбираем его
         if (childIdx + 1 < arr.size() && arr[childIdx + 1] > arr[childIdx]) {
             childIdx++;
         }
 
+        // Если потомок больше родителя, меняем их местами и продолжаем просеивание
         if (arr[childIdx] > arr[nodeIdx]) {
             std::swap(arr[childIdx], arr[nodeIdx]);
             nodeIdx = childIdx;
         } else {
+            // Если потомок меньше или равен родителю, то просеивание завершено
             break;
         }
     }
 }
 
+// Преобразовываем обычный массив в кучу
 void heapify(std::span<int> arr) {
     for (int i = arr.size(); i >= 0; i--) {
         siftDown(arr, i);
     }
 }
 
+// Пирамидальная сортировка
 void heapsort(std::vector<int>& arr) {
     std::span<int> arrSpan(arr);
+
+    // Сначала мы преобразуем массив в кучу
     heapify(arrSpan);
+
+    // Потом мы каждый раз будем доставать минимальный элемент кучи и ставить его в конец
+    // При этом элемент, который стал первым, мы просеиваем вниз
     for (int i = 0; i < arr.size() - 1; i++) {
         std::swap(arr[0], arr[arrSpan.size() - 1]);
         arrSpan = arrSpan.first(arrSpan.size() - 1);

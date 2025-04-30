@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 // В основе сортировки слиянием находится, как ни странно, слияние.
 // Это операция, которая объединяет два отсортированных массива в один
@@ -126,7 +127,12 @@ void mergesort(std::vector<int>& arr) {
     mergesort(arr, 0, arr.size() - 1, leftArr, rightArr);
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    bool benchmark_mode = false;
+    if (argc > 1 && std::string(argv[1]) == "--benchmark") {
+        benchmark_mode = true;
+    }
+
     int n;  // кол-во элементов
     std::cin >> n;
 
@@ -142,11 +148,19 @@ int main() {
     }
 
     // сортируем массив
-    mergesort(arr);
+    if (benchmark_mode) {
+        auto start = std::chrono::high_resolution_clock::now();
+        mergesort(arr);
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        std::cout << duration.count() << std::endl;
+    } else {
+        mergesort(arr);
 
-    // выводим массив на экран
-    for (int num : arr) {
-        std::cout << num << " ";
+        // выводим массив на экран
+        for (int num : arr) {
+            std::cout << num << " ";
+        }
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
 }

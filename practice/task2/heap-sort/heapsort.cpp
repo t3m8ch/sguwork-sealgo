@@ -2,6 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <span>
+#include <chrono>
 
 // Эта функция "просеивает" узел дерева до тех пор, пока оно не нарушит свойство кучи.
 void siftDown(std::span<int> arr, int nodeIdx) {
@@ -49,7 +50,12 @@ void heapsort(std::vector<int>& arr) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    bool benchmark_mode = false;
+    if (argc > 1 && std::string(argv[1]) == "--benchmark") {
+        benchmark_mode = true;
+    }
+
     int n;  // кол-во элементов
     std::cin >> n;
 
@@ -65,11 +71,19 @@ int main() {
     }
 
     // сортируем массив
-    heapsort(arr);
+    if (benchmark_mode) {
+        auto start = std::chrono::high_resolution_clock::now();
+        heapsort(arr);
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        std::cout << duration.count() << std::endl;
+    } else {
+        heapsort(arr);
 
-    // выводим массив на экран
-    for (int num : arr) {
-        std::cout << num << " ";
+        // выводим массив на экран
+        for (int num : arr) {
+            std::cout << num << " ";
+        }
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
 }

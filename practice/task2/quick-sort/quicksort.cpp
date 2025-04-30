@@ -1,6 +1,7 @@
 #include <iostream>
 #include <span>
 #include <vector>
+#include <chrono>
 
 // Быстрая сортировка является алгоритмом, использующий операцию сравнения,
 // поэтому мы наложим на шаблон ограничение, что он должен перегружать операторы сравнения
@@ -56,7 +57,12 @@ void quicksort(std::span<T> arr) {
     }
 }
 
-int main() {
+int main(int argc, char* argv[]) {
+    bool benchmark_mode = false;
+    if (argc > 1 && std::string(argv[1]) == "--benchmark") {
+        benchmark_mode = true;
+    }
+
     int n;  // кол-во элементов
     std::cin >> n;
 
@@ -72,11 +78,19 @@ int main() {
     }
 
     // сортируем массив
-    quicksort(std::span<int>(arr));
+    if (benchmark_mode) {
+        auto start = std::chrono::high_resolution_clock::now();
+        quicksort(std::span<int>(arr));
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        std::cout << duration.count() << std::endl;
+    } else {
+        quicksort(std::span<int>(arr));
 
-    // выводим массив на экран
-    for (int num : arr) {
-        std::cout << num << " ";
+        // выводим массив на экран
+        for (int num : arr) {
+            std::cout << num << " ";
+        }
+        std::cout << std::endl;
     }
-    std::cout << std::endl;
 }

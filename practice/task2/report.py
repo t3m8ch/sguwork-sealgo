@@ -123,19 +123,9 @@ typst_content = f"""#import "./conf.typ": conf
   [Heap sort], [{[round(t) for t in results['Heap sort']][0]} $mu s$], [{[round(t) for t in results['Heap sort']][1]} $mu s$], [{[round(t) for t in results['Heap sort']][2]} $mu s$], [{[round(t) for t in results['Heap sort']][3]} $mu s$]
 )
 
-= Графики времени работы программ
+= Сравнительный график времени работы алгоритмов
 
-== Quick sort
-
-#image("quicksort.png")
-
-== Merge sort
-
-#image("mergesort.png")
-
-== Heap sort
-
-#image("heapsort.png")
+#image("sorting_comparison.png")
 """
 
 with open(os.path.join(report_dir, "main.typ"), "w") as f:
@@ -145,20 +135,29 @@ with open(os.path.join(report_dir, "main.typ"), "w") as f:
 print("\nПостроение графиков...")
 plt.style.use('ggplot')
 
-for algo_name in results.keys():
-    plt.figure(figsize=(10, 6))
-    plt.plot(n_values, results[algo_name], 'o-', linewidth=2, markersize=8)
-    plt.title(f'Производительность алгоритма {algo_name}', fontsize=14)
-    plt.xlabel('Количество элементов', fontsize=12)
-    plt.ylabel('Время выполнения (мкс)', fontsize=12)
-    plt.xscale('log')
-    plt.yscale('log')
-    plt.xticks(n_values, labels=[f"{n//1000}K" if n < 1e6 else "1M" for n in n_values], fontsize=10)
-    plt.yticks(fontsize=10)
-    plt.grid(True, which='both', linestyle='--', alpha=0.7)
-    plt.tight_layout()
-    plt.savefig(os.path.join(report_dir, f"{algo_name.lower().replace(' ', '')}.png"), dpi=300)
-    plt.close()
+# Создаем одну фигуру для всех алгоритмов
+plt.figure(figsize=(10, 6))
+
+# Отображаем данные каждого алгоритма на одном графике
+markers = ['o', 's', '^']  # Разные маркеры для каждого алгоритма
+colors = ['#1f77b4', '#ff7f0e', '#2ca02c']  # Разные цвета для каждого алгоритма
+
+for i, algo_name in enumerate(results.keys()):
+    plt.plot(n_values, results[algo_name], marker=markers[i], color=colors[i],
+             linewidth=2, markersize=8, label=algo_name)
+
+plt.title('Сравнение производительности алгоритмов сортировки', fontsize=14)
+plt.xlabel('Количество элементов', fontsize=12)
+plt.ylabel('Время выполнения (мкс)', fontsize=12)
+plt.xscale('log')
+plt.yscale('log')
+plt.xticks(n_values, labels=[f"{n//1000}K" if n < 1e6 else "1M" for n in n_values], fontsize=10)
+plt.yticks(fontsize=10)
+plt.grid(True, which='both', linestyle='--', alpha=0.7)
+plt.legend(fontsize=12)
+plt.tight_layout()
+plt.savefig(os.path.join(report_dir, "sorting_comparison.png"), dpi=300)
+plt.close()
 
 # Компиляция Typst в PDF
 print("\nКомпиляция PDF...")

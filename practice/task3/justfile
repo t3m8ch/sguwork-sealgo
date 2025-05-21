@@ -1,0 +1,2 @@
+tidy:
+    clang-tidy bintree.cpp

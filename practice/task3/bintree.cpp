@@ -129,9 +129,6 @@ static int _treeHeight(Node<T> *node) {
 
 template <std::totally_ordered T>
 static void print(Node<T>* root) {
-    // Установка локали для поддержки Unicode
-    std::setlocale(LC_ALL, "");
-
     if (!root) {
         return;
     }
@@ -260,27 +257,62 @@ static void print(Node<T>* root) {
 }  // namespace BinTree
 
 int main() {
+    std::setlocale(LC_ALL, "");
     std::unique_ptr<BinTree::Node<int>> root = nullptr;
 
-    BinTree::addNode(root, 5);
-    BinTree::addNode(root, 3);
-    BinTree::addNode(root, 7);
-    BinTree::addNode(root, 12);
+    while (true) {
+        std::string cmd;
+        std::cin >> cmd;
 
-    BinTree::preOrder(root, std::function<void(const int&)>([](int value) {
-        std::cout << value << ' ';
-    }));
-    std::cout << std::endl;
+        if (cmd == "exit") {
+            break;
+        }
 
-    BinTree::inOrder(root, std::function<void(const int&)>([](int value) {
-        std::cout << value << ' ';
-    }));
-    std::cout << std::endl;
+        if (cmd == "add") {
+            int n;
+            std::cin >> n;
+            BinTree::addNode(root, n);
+        }
 
-    BinTree::postOrder(root, std::function<void(const int&)>([](int value) {
-        std::cout << value << ' ';
-    }));
-    std::cout << std::endl;
+        if (cmd == "remove") {
+            int n;
+            std::cin >> n;
+            BinTree::removeNode(root, n);
+        }
+
+        if (cmd == "print") {
+            BinTree::print(root.get());
+        }
+
+        if (cmd == "inorder") {
+            BinTree::inOrder(root, std::function<void (const int&)>([](int value){
+                std::wcout << value << ' ';
+            }));
+            std::wcout << std::endl;
+        }
+
+        if (cmd == "preorder") {
+            BinTree::preOrder(root, std::function<void (const int&)>([](int value){
+                std::wcout << value << ' ';
+            }));
+            std::wcout << std::endl;
+        }
+
+        if (cmd == "postorder") {
+            BinTree::postOrder(root, std::function<void (const int&)>([](int value){
+                std::wcout << value << ' ';
+            }));
+            std::wcout << std::endl;
+        }
+
+        if (cmd == "search") {
+            int n;
+            std::cin >> n;
+
+            auto node = BinTree::search(root, n);
+            print(node);
+        }
+    }
 
     return 0;
 }

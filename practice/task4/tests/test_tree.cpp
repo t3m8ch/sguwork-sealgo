@@ -17,6 +17,60 @@ TEST_CASE("Adding black node to root", "[insert]") {
     REQUIRE(expectedJson == actualJson);
 }
 
+TEST_CASE("Naive insertion left child", "[insert]") {
+    nlohmann::json inputJsonTree = {
+        {"color", "black"},
+        {"value", 10},
+        {"left", nullptr},
+        {"right", nullptr}
+    };
+
+    RedBlackTree<int> tree(inputJsonTree);
+    tree.insert(5);
+    auto actualJsonTree = tree.toJson();
+
+    nlohmann::json expectedJsonTree = {
+        {"color", "black"},
+        {"value", 10},
+        {"left", {
+            {"color", "red"},
+            {"value", 5},
+            {"left", {}},
+            {"right", {}}
+        }},
+        {"right", nullptr}
+    };
+
+    REQUIRE(actualJsonTree == expectedJsonTree);
+}
+
+TEST_CASE("Naive insertion right child", "[insert]") {
+    nlohmann::json inputJsonTree = {
+        {"color", "black"},
+        {"value", 10},
+        {"left", nullptr},
+        {"right", nullptr}
+    };
+
+    RedBlackTree<int> tree(inputJsonTree);
+    tree.insert(15);
+    auto actualJsonTree = tree.toJson();
+
+    nlohmann::json expectedJsonTree = {
+        {"color", "black"},
+        {"value", 10},
+        {"left", nullptr},
+        {"right", {
+            {"color", "red"},
+            {"value", 15},
+            {"left", {}},
+            {"right", {}}
+        }}
+    };
+
+    REQUIRE(actualJsonTree == expectedJsonTree);
+}
+
 TEST_CASE("Insert with red uncle triggers recoloring", "[insert]") {
     nlohmann::json inputJsonTree = {
         {"value", 10},

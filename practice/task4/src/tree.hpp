@@ -1,7 +1,9 @@
 #pragma once
 
 #include <concepts>
+#include <memory>
 #include <nlohmann/json.hpp>
+#include <optional>
 
 template <std::totally_ordered T>
 class RedBlackTree {
@@ -57,6 +59,8 @@ public:
         } else {
             q->left = node;
         }
+
+        fixAfterInsert(node);
     }
 
     bool remove(const T& value) {
@@ -81,11 +85,161 @@ private:
         Node() : color(BLACK) {}
 
         bool isNil() const { return !value.has_value(); }
+        bool isRoot() const { return parent.expired(); }
         const T& getValue() const { return value.value(); }
     };
 
     std::shared_ptr<Node> NIL;
     std::shared_ptr<Node> root;
+
+    // Метод, который восстанавливает свойства красно-чёрного дерева после вставки узла
+    void fixAfterInsert(std::shared_ptr<Node> node) {
+        // Если узел является корнем
+        if (node->isRoot()) {
+            // то мы его должны перекрасить в чёрный цвет
+            node->color = Node::BLACK;
+            return;
+        }
+
+        while (true) {
+            auto parent = node->parent.lock();
+            if (!parent || parent->color == Node::BLACK) {
+                // Если наш отец чёрный, то мы не нарушаем никаких правил
+                // => мы можем закончить наш цикл, КЧД исправлено
+                break;
+            }
+
+            auto grandfather = parent->parent.lock();
+            if (!grandfather) {
+                break;
+            }
+
+            if (grandfather->left == parent) {
+                // Если родитель -- левый ребёнок дедушки,
+                // то дядя -- это правый рёбёнок дедушки
+                auto uncle = grandfather->right;
+
+                // Если у нас есть красный дядя, то начинаем перекрашивание
+                if (!uncle->isNil() && uncle->color == Node::Color::RED) {
+                    parent->color = Node::Color::BLACK;
+                    uncle->color = Node::Color::BLACK;
+                    grandfather->color = Node::Color::RED;
+
+                    // ОСТОРОЖНО
+                    node = grandfather;
+                } else {
+                    // Если же наш дядя чёрный, то начинаем повороты
+
+                    // Если node -- правый сын
+                    if (node == parent->right) {
+                        // то мы поворачиваем влево
+                        // ОСТОРОЖНО
+                        node = parent;
+                        leftRotate(node);
+                    }
+
+                    parent->color = Node::Color::BLACK;
+                    grandfather->color = Node::Color::RED;
+
+                    rightRotate(grandfather);
+                }
+            } else {
+                // Если родитель -- правый ребёнок дедушки,
+                // то дядя -- это левый рёбёнок дедушки
+
+                auto uncle = grandfather->left;
+
+                // Если у нас есть красный дядя, то начинаем перекрашивание
+                if (!uncle->isNil() && uncle->color == Node::Color::RED) {
+                    parent->color = Node::Color::BLACK;
+                    uncle->color = Node::Color::BLACK;
+                    grandfather->color = Node::Color::RED;
+
+                    // ОСТОРОЖНО
+                    node = grandfather;
+                } else {
+                    // Если же наш дядя чёрный, то начинаем повороты
+
+                    // Если node -- левый сын
+                    if (node == parent->right) {
+                        // то мы поворачиваем влево
+
+                        // ОСТОРОЖНО
+                        node = parent;
+                        rightRotate(node);
+                    }
+
+                    parent->color = Node::Color::BLACK;
+                    grandfather->color = Node::Color::RED;
+
+                    leftRotate(grandfather);
+                }
+            }
+        }
+
+        // Красим корень в чёрный
+        root->color = Node::Color::BLACK;
+    }
+
+    void leftRotate(std::shared_ptr<Node> x) {
+        // Правый ребёнок становится новым корнем поддерева
+        auto y = x->right;
+
+        // Левый ребёнок y становится правым ребёнком x
+        x->right = y->left;
+        if (y->left && !y->left->isNil()) {
+            y->left->parent = x; // Обновляем родителя левого ребёнка y
+        }
+
+        // y занимает место x
+        y->parent = x->parent;
+
+        // Обновляем родителя x
+        if (auto parent = x->parent.lock()) {
+            if (x == parent->left) {
+                parent->left = y;
+            } else {
+                parent->right = y;
+            }
+        } else {
+            // Если мы не смогли найти родителя x, значит x был корнем
+            root = y;
+        }
+
+        // Делаем x левым ребёнком y
+        y->left = x;
+        x->parent = y;
+    }
+
+    void rightRotate(std::shared_ptr<Node> x) {
+        // Левый ребёнок становится новым корнем поддерева
+        auto y = x->left;
+
+        // Правый ребёнок y становится левым ребёнком x
+        x->left = y->right;
+        if (y->right && !y->right->isNil()) {
+            y->right->parent = x; // Обновляем родителя правого ребёнка y
+        }
+
+        // y занимает место x
+        y->parent = x->parent;
+
+        // Обновляем родителя x
+        if (auto parent = x->parent.lock()) {
+            if (x == parent->right) {
+                parent->right = y;
+            } else {
+                parent->left = y;
+            }
+        } else {
+            // Если мы не смогли найти родителя x, значит x был корнем
+            root = y;
+        }
+
+        // Делаем y правым ребёнком x
+        y->right = x;
+        x->parent = y;
+    }
 
     nlohmann::json toJson(std::shared_ptr<Node> node) const {
         if (node->isNil()) {

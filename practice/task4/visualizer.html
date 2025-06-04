@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Red-Black Tree Tracer</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f5f5f5;
+            }
+
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .controls {
+                margin-bottom: 20px;
+                padding: 15px;
+                background: #f8f9fa;
+                border-radius: 5px;
+            }
+
+            .step-info {
+                background: #e3f2fd;
+                padding: 15px;
+                margin: 10px 0;
+                border-radius: 5px;
+                border-left: 4px solid #2196f3;
+            }
+
+            .tree-container {
+                border: 1px solid #ddd;
+                padding: 20px;
+                margin: 20px 0;
+                border-radius: 5px;
+                background: #fafafa;
+                min-height: 400px;
+            }
+
+            button {
+                background: #2196f3;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin: 5px;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            button:hover {
+                background: #1976d2;
+            }
+
+            button:disabled {
+                background: #ccc;
+                cursor: not-allowed;
+            }
+
+            input[type="file"] {
+                margin: 10px 0;
+            }
+
+            .highlighted-node {
+                fill: #ffeb3b !important;
+                stroke: #f57c00 !important;
+                stroke-width: 3px !important;
+            }
+
+            .red-node {
+                fill: #ffcdd2 !important;
+                stroke: #d32f2f !important;
+            }
+
+            .black-node {
+                fill: #e0e0e0 !important;
+                stroke: #424242 !important;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Red-Black Tree Tracer</h1>
+
+            <div class="controls">
+                <input type="file" id="trace-file" accept=".json" />
+                <button onclick="loadTrace()">Load Trace</button>
+                <br /><br />
+                <button onclick="previousStep()" id="prev-btn" disabled>
+                    Previous Step
+                </button>
+                <button onclick="nextStep()" id="next-btn" disabled>
+                    Next Step
+                </button>
+                <button onclick="playTrace()" id="play-btn" disabled>
+                    Play All
+                </button>
+                <span
+                    >Step: <span id="current-step">0</span> /
+                    <span id="total-steps">0</span></span
+                >
+            </div>
+
+            <div class="step-info" id="step-info" style="display: none">
+                <h3>Current Step</h3>
+                <p><strong>Operation:</strong> <span id="operation"></span></p>
+                <p>
+                    <strong>Description:</strong> <span id="description"></span>
+                </p>
+                <p>
+                    <strong>Highlighted Node:</strong>
+                    <span id="highlighted"></span>
+                </p>
+            </div>
+
+            <div class="tree-container" id="tree-container">
+                <p>Load a trace file to begin visualization</p>
+            </div>
+        </div>
+
+        <script>
+            let traceData = null;
+            let currentStepIndex = 0;
+            let isPlaying = false;
+
+            function loadTrace() {
+                const fileInput = document.getElementById("trace-file");
+                const file = fileInput.files[0];
+
+                if (!file) {
+                    alert("Please select a trace file");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    try {
+                        traceData = JSON.parse(e.target.result);
+                        currentStepIndex = 0;
+                        updateUI();
+                        displayStep(0);
+                    } catch (error) {
+                        alert("Error parsing JSON: " + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            function updateUI() {
+                const hasData = traceData && traceData.steps;
+                document.getElementById("prev-btn").disabled =
+                    !hasData || currentStepIndex === 0;
+                document.getElementById("next-btn").disabled =
+                    !hasData || currentStepIndex >= traceData.steps.length - 1;
+                document.getElementById("play-btn").disabled = !hasData;
+
+                if (hasData) {
+                    document.getElementById("current-step").textContent =
+                        currentStepIndex + 1;
+                    document.getElementById("total-steps").textContent =
+                        traceData.steps.length;
+                }
+            }
+
+            function displayStep(stepIndex) {
+                if (!traceData || !traceData.steps[stepIndex]) return;
+
+                const step = traceData.steps[stepIndex];
+
+                // Обновить информацию о шаге
+                document.getElementById("step-info").style.display = "block";
+                document.getElementById("operation").textContent =
+                    step.operation;
+                document.getElementById("description").textContent =
+                    step.description;
+                document.getElementById("highlighted").textContent =
+                    step.highlighted_node || "None";
+
+                // Отобразить дерево
+                displayTree(step.tree_state, step.highlighted_node);
+            }
+
+            function displayTree(treeData, highlightedNode) {
+                const container = document.getElementById("tree-container");
+
+                if (!treeData) {
+                    container.innerHTML = "<p>Empty tree</p>";
+                    return;
+                }
+
+                // Создать SVG визуализацию дерева
+                container.innerHTML = generateTreeVisualization(
+                    treeData,
+                    highlightedNode,
+                );
+            }
+
+            function generateTreeVisualization(nodeData, highlightedValue) {
+                if (!nodeData) return "";
+
+                const svg = document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "svg",
+                );
+                svg.setAttribute("width", "100%");
+                svg.setAttribute("height", "400");
+                svg.setAttribute("viewBox", "0 0 800 400");
+
+                renderNode(svg, nodeData, 400, 50, 200, highlightedValue);
+
+                return svg.outerHTML;
+            }
+
+            function renderNode(
+                svg,
+                nodeData,
+                x,
+                y,
+                xOffset,
+                highlightedValue,
+            ) {
+                if (!nodeData) return;
+
+                // Создать узел
+                const circle = document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "circle",
+                );
+                circle.setAttribute("cx", x);
+                circle.setAttribute("cy", y);
+                circle.setAttribute("r", 25);
+
+                // Установить цвет узла
+                if (nodeData.value === highlightedValue) {
+                    circle.setAttribute("class", "highlighted-node");
+                } else if (nodeData.color === "red") {
+                    circle.setAttribute("class", "red-node");
+                } else {
+                    circle.setAttribute("class", "black-node");
+                }
+
+                svg.appendChild(circle);
+
+                // Добавить текст значения
+                const text = document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "text",
+                );
+                text.setAttribute("x", x);
+                text.setAttribute("y", y + 5);
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("font-size", "14");
+                text.setAttribute("font-weight", "bold");
+                text.textContent = nodeData.value;
+                svg.appendChild(text);
+
+                // Рекурсивно отрисовать детей
+                if (nodeData.left && nodeData.left.value !== undefined) {
+                    // Линия к левому ребенку
+                    const leftLine = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "line",
+                    );
+                    leftLine.setAttribute("x1", x);
+                    leftLine.setAttribute("y1", y + 25);
+                    leftLine.setAttribute("x2", x - xOffset);
+                    leftLine.setAttribute("y2", y + 75);
+                    leftLine.setAttribute("stroke", "#666");
+                    leftLine.setAttribute("stroke-width", "2");
+                    svg.appendChild(leftLine);
+
+                    renderNode(
+                        svg,
+                        nodeData.left,
+                        x - xOffset,
+                        y + 80,
+                        xOffset / 2,
+                        highlightedValue,
+                    );
+                }
+
+                if (nodeData.right && nodeData.right.value !== undefined) {
+                    // Линия к правому ребенку
+                    const rightLine = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "line",
+                    );
+                    rightLine.setAttribute("x1", x);
+                    rightLine.setAttribute("y1", y + 25);
+                    rightLine.setAttribute("x2", x + xOffset);
+                    rightLine.setAttribute("y2", y + 75);
+                    rightLine.setAttribute("stroke", "#666");
+                    rightLine.setAttribute("stroke-width", "2");
+                    svg.appendChild(rightLine);
+
+                    renderNode(
+                        svg,
+                        nodeData.right,
+                        x + xOffset,
+                        y + 80,
+                        xOffset / 2,
+                        highlightedValue,
+                    );
+                }
+            }
+
+            function previousStep() {
+                if (currentStepIndex > 0) {
+                    currentStepIndex--;
+                    displayStep(currentStepIndex);
+                    updateUI();
+                }
+            }
+
+            function nextStep() {
+                if (
+                    traceData &&
+                    currentStepIndex < traceData.steps.length - 1
+                ) {
+                    currentStepIndex++;
+                    displayStep(currentStepIndex);
+                    updateUI();
+                }
+            }
+
+            function playTrace() {
+                if (isPlaying) return;
+
+                isPlaying = true;
+                document.getElementById("play-btn").textContent = "Playing...";
+
+                function playNextStep() {
+                    if (currentStepIndex < traceData.steps.length - 1) {
+                        nextStep();
+                        setTimeout(playNextStep, 1500); // 1.5 секунды между шагами
+                    } else {
+                        isPlaying = false;
+                        document.getElementById("play-btn").textContent =
+                            "Play All";
+                    }
+                }
+
+                currentStepIndex = 0;
+                displayStep(currentStepIndex);
+                updateUI();
+                setTimeout(playNextStep, 1500);
+            }
+        </script>
+    </body>
+</html>

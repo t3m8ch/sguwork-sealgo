@@ -4,6 +4,7 @@
 
 TEST_CASE("Adding black node to root", "[insert]") {
     RedBlackTree<int> tree;
+    tree.enableTracing();
     tree.insert(10);
 
     nlohmann::json expectedJson = {
@@ -13,6 +14,8 @@ TEST_CASE("Adding black node to root", "[insert]") {
         {"right", nullptr}
     };
     auto actualJson = tree.toJson();
+
+    tree.saveTrace("add_black_node_to_root_" + std::to_string(std::time(nullptr)) + ".json");
 
     REQUIRE(expectedJson == actualJson);
 }
@@ -26,6 +29,7 @@ TEST_CASE("Naive insertion left child", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
     tree.insert(5);
     auto actualJsonTree = tree.toJson();
 
@@ -41,6 +45,8 @@ TEST_CASE("Naive insertion left child", "[insert]") {
         {"right", nullptr}
     };
 
+    tree.saveTrace("naive_insert_left_child_" + std::to_string(std::time(nullptr)) + ".json");
+
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
@@ -53,6 +59,8 @@ TEST_CASE("Naive insertion right child", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(15);
     auto actualJsonTree = tree.toJson();
 
@@ -67,6 +75,8 @@ TEST_CASE("Naive insertion right child", "[insert]") {
             {"right", {}}
         }}
     };
+
+    tree.saveTrace("naive_insert_right_child_" + std::to_string(std::time(nullptr)) + ".json");
 
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
@@ -100,6 +110,8 @@ TEST_CASE("Insert with red uncle triggers recoloring", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(1);
     auto actualJsonTree = tree.toJson();
 
@@ -135,6 +147,7 @@ TEST_CASE("Insert with red uncle triggers recoloring", "[insert]") {
         }}
     };
 
+    tree.saveTrace("insert_with_red_uncle_triggers_recoloring" + std::to_string(std::time(nullptr)) + ".json");
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
@@ -157,6 +170,8 @@ TEST_CASE("Insert into simple tree with red siblings", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(1);
     auto actualJsonTree = tree.toJson();
 
@@ -182,6 +197,7 @@ TEST_CASE("Insert into simple tree with red siblings", "[insert]") {
         }}
     };
 
+    tree.saveTrace("insert_into_simple_tree_with_red_siblings" + std::to_string(std::time(nullptr)) + ".json");
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
@@ -224,6 +240,8 @@ TEST_CASE("Insert triggering root rotation and restructuring", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(0);
     auto actualJsonTree = tree.toJson();
 
@@ -269,6 +287,7 @@ TEST_CASE("Insert triggering root rotation and restructuring", "[insert]") {
         }}
     };
 
+    tree.saveTrace("insert_triggering_root_rotation_and_restructuring" + std::to_string(std::time(nullptr)) + ".json");
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
@@ -331,6 +350,8 @@ TEST_CASE("Insert into complex tree maintaining balance", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(0);
     auto actualJsonTree = tree.toJson();
 
@@ -396,6 +417,7 @@ TEST_CASE("Insert into complex tree maintaining balance", "[insert]") {
         }}
     };
 
+    tree.saveTrace("insert_into_complex_tree_maintaining_balance" + std::to_string(std::time(nullptr)) + ".json");
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
@@ -408,6 +430,8 @@ TEST_CASE("Insert left child into single node tree", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(0);
     auto actualJsonTree = tree.toJson();
 
@@ -423,6 +447,7 @@ TEST_CASE("Insert left child into single node tree", "[insert]") {
         {"right", nullptr}
     };
 
+    tree.saveTrace("insert_left_child_into_single_node_tree" + std::to_string(std::time(nullptr)) + ".json");
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
@@ -435,6 +460,8 @@ TEST_CASE("Insert right child into single node tree", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(0);
     auto actualJsonTree = tree.toJson();
 
@@ -449,6 +476,8 @@ TEST_CASE("Insert right child into single node tree", "[insert]") {
             {"right", nullptr}
         }}
     };
+
+    tree.saveTrace("insert_right_child_into_single_node_tree" + std::to_string(std::time(nullptr)) + ".json");
 
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
@@ -467,6 +496,8 @@ TEST_CASE("Insert triggering Left-Right case with rotations", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(7);
 
     auto actualJsonTree = tree.toJson();
@@ -488,6 +519,7 @@ TEST_CASE("Insert triggering Left-Right case with rotations", "[insert]") {
         }}
     };
 
+    tree.saveTrace("insert_triggering_left_right_case_with_rotations" + std::to_string(std::time(nullptr)) + ".json");
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
@@ -505,6 +537,8 @@ TEST_CASE("Insert triggering Right-Left case with rotations", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(12);
 
     auto actualJsonTree = tree.toJson();
@@ -526,6 +560,7 @@ TEST_CASE("Insert triggering Right-Left case with rotations", "[insert]") {
         }}
     };
 
+    tree.saveTrace("insert_triggering_right_left_case_with_rotations" + std::to_string(std::time(nullptr)) + ".json");
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
@@ -543,6 +578,8 @@ TEST_CASE("Insert triggering Right-Right case with rotation", "[insert]") {
     };
 
     RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing();
+
     tree.insert(20);
 
     auto actualJsonTree = tree.toJson();
@@ -564,5 +601,6 @@ TEST_CASE("Insert triggering Right-Right case with rotation", "[insert]") {
         }}
     };
 
+    tree.saveTrace("insert_triggering_right_right_case_with_rotations" + std::to_string(std::time(nullptr)) + ".json");
     REQUIRE(actualJsonTree == expectedJsonTree);
 }

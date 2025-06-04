@@ -28,6 +28,34 @@ public:
 
             // Задаём пустой указатель в качестве родителя
             root->parent = std::weak_ptr<Node>();
+
+            return;
+        }
+
+        // Если же дерево не пустое, то мы создаём новый красный узел
+        auto node = std::make_shared<Node>(value, Node::Color::RED);
+        node->left = NIL;
+        node->right = NIL;
+
+        std::shared_ptr<Node> p = root;
+        std::shared_ptr<Node> q = NIL;
+
+        // Спускаемся вниз, пока не дойдём до подходящего листа
+        while (!p->isNil()) {
+            q = p;
+            if (*(p->value) < value) {
+                p = p->right;
+            } else {
+                p = p->left;
+            }
+        }
+        node->parent = q;
+
+        // Добавляем новый узел красного цвета
+        if (*(q->value) < value) {
+            q->right = node;
+        } else {
+            q->left = node;
         }
     }
 

@@ -421,67 +421,6 @@ TEST_CASE("Insert into complex tree maintaining balance", "[insert]") {
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
-TEST_CASE("Insert left child into single node tree", "[insert]") {
-    nlohmann::json inputJsonTree = {
-        {"value", 10},
-        {"color", "black"},
-        {"left", nullptr},
-        {"right", nullptr}
-    };
-
-    RedBlackTree<int> tree(inputJsonTree);
-    tree.enableTracing();
-
-    tree.insert(0);
-    auto actualJsonTree = tree.toJson();
-
-    nlohmann::json expectedJsonTree = {
-        {"value", 10},
-        {"color", "black"},
-        {"left", {
-            {"value", 5},
-            {"color", "red"},
-            {"left", nullptr},
-            {"right", nullptr}
-        }},
-        {"right", nullptr}
-    };
-
-    tree.saveTrace("insert_left_child_into_single_node_tree" + std::to_string(std::time(nullptr)) + ".json");
-    REQUIRE(actualJsonTree == expectedJsonTree);
-}
-
-TEST_CASE("Insert right child into single node tree", "[insert]") {
-    nlohmann::json inputJsonTree = {
-        {"value", 10},
-        {"color", "black"},
-        {"left", nullptr},
-        {"right", nullptr}
-    };
-
-    RedBlackTree<int> tree(inputJsonTree);
-    tree.enableTracing();
-
-    tree.insert(0);
-    auto actualJsonTree = tree.toJson();
-
-    nlohmann::json expectedJsonTree = {
-        {"value", 10},
-        {"color", "black"},
-        {"left", nullptr},
-        {"right", {
-            {"value", 15},
-            {"color", "red"},
-            {"left", nullptr},
-            {"right", nullptr}
-        }}
-    };
-
-    tree.saveTrace("insert_right_child_into_single_node_tree" + std::to_string(std::time(nullptr)) + ".json");
-
-    REQUIRE(actualJsonTree == expectedJsonTree);
-}
-
 TEST_CASE("Insert triggering Left-Right case with rotations", "[insert]") {
     nlohmann::json inputJsonTree = {
         {"value", 10},

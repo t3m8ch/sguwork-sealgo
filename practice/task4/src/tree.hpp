@@ -17,6 +17,18 @@ public:
     }
 
     void insert(const T& value) {
+        // Если дерево пустое, создаём корень
+        if (root->isNil()) {
+            // В КЧД корень обязательно чёрный
+            root = std::make_shared<Node>(value, Node::Color::BLACK);
+
+            // Задаём фиктивных детей
+            root->left = NIL;
+            root->right = NIL;
+
+            // Задаём пустой указатель в качестве родителя
+            root->parent = std::weak_ptr<Node>();
+        }
     }
 
     bool remove(const T& value) {

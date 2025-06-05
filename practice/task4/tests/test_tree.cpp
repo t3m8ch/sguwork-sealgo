@@ -705,23 +705,23 @@ TEST_CASE("Remove red node with two children and red max node in left subtree", 
         {"value", 20},
         {"color", "black"},
         {"left", {
-            {"value", 11},
+            {"value", 10},
             {"color", "red"},
             {"left", {
-                {"value", 10},
+                {"value", 5},
                 {"color", "black"},
-                {"left", {
-                    {"value", 5},
-                    {"color", "red"},
-                    {"left", nullptr},
-                    {"right", nullptr}
-                }},
+                {"left", nullptr},
                 {"right", nullptr}
             }},
             {"right", {
                 {"value", 17},
                 {"color", "black"},
-                {"left", nullptr},
+                {"left", {
+                    {"value", 11},
+                    {"color", "red"},
+                    {"left", nullptr},
+                    {"right", nullptr}
+                }},
                 {"right", nullptr}
             }}
         }},
@@ -1310,7 +1310,12 @@ TEST_CASE("Remove black node, with black non-root parent and black brother", "[r
         {"right", {
             {"value", 25},
             {"color", "black"},
-            {"left", nullptr},
+            {"left", {
+                {"value", 22},
+                {"color", "black"},
+                {"left", nullptr},
+                {"right", nullptr}
+            }},
             {"right", {
                 {"value", 30},
                 {"color", "black"},
@@ -1342,13 +1347,23 @@ TEST_CASE("Remove black node, with black non-root parent and black brother", "[r
         }},
         {"right", {
             {"value", 25},
-            {"color", "black"},
-            {"left", nullptr},
-            {"right", nullptr}
+            {"color", "red"},
+            {"left", {
+                {"value", 22},
+                {"color", "black"},
+                {"left", nullptr},
+                {"right", nullptr}
+            }},
+            {"right", {
+                {"value", 30},
+                {"color", "black"},
+                {"left", nullptr},
+                {"right", nullptr}
+            }}
         }}
     };
 
-    tree.saveTrace("remove_black_node_with_red_non_root_parent_and_black_brother.json");
+    tree.saveTrace("remove_black_node_with_black_non_root_parent_and_black_brother.json");
 
     REQUIRE(actualJsonTree == expectedJsonTree);
     REQUIRE(removed);

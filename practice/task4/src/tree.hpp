@@ -81,8 +81,92 @@ public:
     }
 
     bool remove(const T& value) {
-        // Implementation of the remove function
-        return false;
+        recordStep("remove", "Starting removal of value: " + std::to_string(value));
+
+        // Поиск узла для удаления встроен в метод
+        auto nodeToDelete = root;
+        while (!nodeToDelete->isNil()) {
+            if (value == nodeToDelete->getValue()) {
+                break;
+            } else if (value < nodeToDelete->getValue()) {
+                nodeToDelete = nodeToDelete->left;
+            } else {
+                nodeToDelete = nodeToDelete->right;
+            }
+        }
+
+        // Если узел не найден
+        if (nodeToDelete->isNil()) {
+            recordStep("remove", "Value not found in tree");
+            return false;
+        }
+
+        recordStep("remove", "Found node to delete: " + std::to_string(value), nodeToDelete);
+
+        // y - узел, который будет физически удалён
+        // x - узел, который займёт место y
+        std::shared_ptr<Node> y, x;
+
+        // Определяем узел для физического удаления
+        if (nodeToDelete->left->isNil() || nodeToDelete->right->isNil()) {
+            // У узла 0 или 1 ребёнок - удаляем сам узел
+            y = nodeToDelete;
+            recordStep("remove", "Node has 0 or 1 child, will delete directly");
+        } else {
+            // У узла 2 ребёнка - ищем преемника (встроенный поиск)
+            y = nodeToDelete->right;
+            while (!y->left->isNil()) {
+                y = y->left;
+            }
+            recordStep("remove", "Node has 2 children, found successor: " + std::to_string(y->getValue()), y);
+        }
+
+        // Определяем узел, который займёт место y
+        if (!y->left->isNil()) {
+            x = y->left;
+        } else {
+            x = y->right;
+        }
+
+        // Сохраняем родителя y для случая, когда x будет NIL
+        auto yParent = y->parent.lock();
+
+        // Связываем x с родителем y
+        if (!x->isNil()) {
+            x->parent = y->parent;
+        }
+
+        if (!yParent) {
+            // y был корнем
+            root = x;
+            recordStep("remove", "Deleted node was root, setting new root");
+        } else {
+            // Подключаем x к родителю y
+            if (y == yParent->left) {
+                yParent->left = x;
+            } else {
+                yParent->right = x;
+            }
+        }
+
+        // Сохраняем цвет удаляемого узла
+        auto yOriginalColor = y->color;
+
+        // Если y не тот узел, который мы хотели удалить,
+        // копируем значение y в nodeToDelete
+        if (y != nodeToDelete) {
+            nodeToDelete->value = y->value;
+            recordStep("remove", "Replaced node value with successor value");
+        }
+
+        // Если удалённый узел был чёрным, нужна корректировка
+        if (yOriginalColor == Node::BLACK) {
+            recordStep("remove", "Deleted node was black, starting fixup");
+            fixAfterRemove(x, yParent);
+        }
+
+        recordStep("remove", "Removal completed");
+        return true;
     }
 
     nlohmann::json toJson() const {
@@ -261,6 +345,115 @@ private:
 
         // Красим корень в чёрный
         root->color = Node::Color::BLACK;
+    }
+
+    void fixAfterRemove(std::shared_ptr<Node> x, std::shared_ptr<Node> xParent = nullptr) {
+        recordStep("fixRemove", "Starting removal fixup");
+
+        while (x != root && (x->isNil() || x->color == Node::BLACK)) {
+            auto parent = x->isNil() ? xParent : x->parent.lock();
+
+            if (!parent) break;
+
+            if (x == parent->left) {
+                // x - левый ребёнок
+                auto sibling = parent->right;
+
+                // Случай 1: брат красный
+                if (!sibling->isNil() && sibling->color == Node::RED) {
+                    recordStep("fixRemove", "Case 1: Red sibling");
+                    sibling->color = Node::BLACK;
+                    parent->color = Node::RED;
+                    leftRotate(parent);
+                    sibling = parent->right;
+                }
+
+                // Случай 2: брат чёрный, оба его ребёнка чёрные
+                if ((sibling->left->isNil() || sibling->left->color == Node::BLACK) &&
+                    (sibling->right->isNil() || sibling->right->color == Node::BLACK)) {
+                    recordStep("fixRemove", "Case 2: Black sibling with black children");
+                    if (!sibling->isNil()) {
+                        sibling->color = Node::RED;
+                    }
+                    x = parent;
+                    xParent = parent->parent.lock();
+                } else {
+                    // Случай 3: правый ребёнок брата чёрный, левый красный
+                    if (sibling->right->isNil() || sibling->right->color == Node::BLACK) {
+                        recordStep("fixRemove", "Case 3: Right nephew black, left nephew red");
+                        if (!sibling->left->isNil()) {
+                            sibling->left->color = Node::BLACK;
+                        }
+                        sibling->color = Node::RED;
+                        rightRotate(sibling);
+                        sibling = parent->right;
+                    }
+
+                    // Случай 4: правый ребёнок брата красный
+                    recordStep("fixRemove", "Case 4: Right nephew red");
+                    sibling->color = parent->color;
+                    parent->color = Node::BLACK;
+                    if (!sibling->right->isNil()) {
+                        sibling->right->color = Node::BLACK;
+                    }
+                    leftRotate(parent);
+                    x = root;
+                    break;
+                }
+            } else {
+                // x - правый ребёнок (симметричные случаи)
+                auto sibling = parent->left;
+
+                // Случай 1: брат красный
+                if (!sibling->isNil() && sibling->color == Node::RED) {
+                    recordStep("fixRemove", "Case 1 (right): Red sibling");
+                    sibling->color = Node::BLACK;
+                    parent->color = Node::RED;
+                    rightRotate(parent);
+                    sibling = parent->left;
+                }
+
+                // Случай 2: брат чёрный, оба его ребёнка чёрные
+                if ((sibling->left->isNil() || sibling->left->color == Node::BLACK) &&
+                    (sibling->right->isNil() || sibling->right->color == Node::BLACK)) {
+                    recordStep("fixRemove", "Case 2 (right): Black sibling with black children");
+                    if (!sibling->isNil()) {
+                        sibling->color = Node::RED;
+                    }
+                    x = parent;
+                    xParent = parent->parent.lock();
+                } else {
+                    // Случай 3: левый ребёнок брата чёрный, правый красный
+                    if (sibling->left->isNil() || sibling->left->color == Node::BLACK) {
+                        recordStep("fixRemove", "Case 3 (right): Left nephew black, right nephew red");
+                        if (!sibling->right->isNil()) {
+                            sibling->right->color = Node::BLACK;
+                        }
+                        sibling->color = Node::RED;
+                        leftRotate(sibling);
+                        sibling = parent->left;
+                    }
+
+                    // Случай 4: левый ребёнок брата красный
+                    recordStep("fixRemove", "Case 4 (right): Left nephew red");
+                    sibling->color = parent->color;
+                    parent->color = Node::BLACK;
+                    if (!sibling->left->isNil()) {
+                        sibling->left->color = Node::BLACK;
+                    }
+                    rightRotate(parent);
+                    x = root;
+                    break;
+                }
+            }
+        }
+
+        if (!x->isNil()) {
+            x->color = Node::BLACK;
+            recordStep("fixRemove", "Colored final node black");
+        }
+
+        recordStep("fixRemove", "Removal fixup completed");
     }
 
     void leftRotate(std::shared_ptr<Node> x) {

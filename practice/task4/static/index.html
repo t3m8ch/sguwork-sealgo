@@ -49,12 +49,26 @@
                 align-items: center;
             }
 
+            .random-group {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                padding: 10px;
+                background: #e3f2fd;
+                border-radius: 8px;
+                border: 1px solid #bbdefb;
+            }
+
             input[type="number"] {
                 padding: 10px;
                 border: 2px solid #ddd;
                 border-radius: 5px;
                 font-size: 16px;
                 width: 100px;
+            }
+
+            .random-count {
+                width: 60px;
             }
 
             button {
@@ -83,6 +97,10 @@
 
             .clear-btn {
                 background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            }
+
+            .random-btn {
+                background: linear-gradient(45deg, #4caf50, #45a049);
             }
 
             .status {
@@ -171,6 +189,12 @@
                 color: #7f8c8d;
                 font-size: 14px;
             }
+
+            .range-info {
+                font-size: 12px;
+                color: #666;
+                margin-top: 5px;
+            }
         </style>
     </head>
     <body>
@@ -214,11 +238,29 @@
                         Удалить
                     </button>
                 </div>
+
+                <div class="random-group">
+                    <label for="random-count">Количество:</label>
+                    <input
+                        type="number"
+                        id="random-count"
+                        class="random-count"
+                        value="10"
+                        min="1"
+                        max="50"
+                    />
+                    <button
+                        onclick="addRandomValues()"
+                        class="random-btn"
+                        id="random-btn"
+                    >
+                        Добавить случайные
+                    </button>
+                    <div class="range-info">Диапазон: 1-100</div>
+                </div>
+
                 <button onclick="clearTree()" class="clear-btn" id="clear-btn">
                     Очистить дерево
-                </button>
-                <button onclick="loadExample()" id="example-btn">
-                    Загрузить пример
                 </button>
             </div>
 

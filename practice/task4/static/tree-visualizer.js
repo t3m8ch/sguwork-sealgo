@@ -17,6 +17,13 @@ class RedBlackTreeVisualizer {
         this.insertValue();
       }
     });
+
+    const randomCountInput = document.getElementById("random-count");
+    randomCountInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        this.addRandomValues();
+      }
+    });
   }
 
   async loadTree() {
@@ -142,13 +149,26 @@ class RedBlackTreeVisualizer {
     }
   }
 
-  async loadExample() {
-    const exampleValues = [10, 5, 15, 3, 7, 12, 18, 1, 4, 6, 8, 11, 13, 16, 20];
+  // Новая функция для добавления случайных значений
+  async addRandomValues() {
+    const countInput = document.getElementById("random-count");
+    const count = parseInt(countInput.value);
+
+    if (isNaN(count) || count < 1 || count > 50) {
+      this.showStatus("Пожалуйста, введите количество от 1 до 50", "error");
+      return;
+    }
 
     this.setButtonsEnabled(false);
-    this.showStatus("Загружаем пример дерева...", "success");
+    this.showStatus(`Добавляем ${count} случайных значений...`, "success");
 
-    for (const value of exampleValues) {
+    // Генерируем уникальные случайные числа
+    const randomValues = this.generateUniqueRandomNumbers(count, 1, 100);
+    let successCount = 0;
+
+    for (let i = 0; i < randomValues.length; i++) {
+      const value = randomValues[i];
+
       try {
         const response = await fetch(`${this.baseUrl}/tree/insert`, {
           method: "POST",
@@ -164,15 +184,49 @@ class RedBlackTreeVisualizer {
           this.currentTree = data.tree_state;
           this.renderTree();
           this.updateStats();
-          await new Promise((resolve) => setTimeout(resolve, 200));
+          successCount++;
+
+          // Обновляем статус с прогрессом
+          this.showStatus(
+            `Добавлено ${successCount} из ${count} значений...`,
+            "success",
+          );
+
+          // Небольшая задержка для визуального эффекта
+          await new Promise((resolve) => setTimeout(resolve, 150));
         }
       } catch (error) {
         console.error("Ошибка при вставке значения:", error);
       }
     }
 
-    this.showStatus("Пример дерева успешно загружен!", "success");
+    this.showStatus(
+      `Успешно добавлено ${successCount} случайных значений!`,
+      "success",
+    );
     this.setButtonsEnabled(true);
+  }
+
+  // Генерация уникальных случайных чисел
+  generateUniqueRandomNumbers(count, min, max) {
+    const numbers = new Set();
+    const range = max - min + 1;
+
+    // Если запрашиваем больше чисел, чем возможно в диапазоне
+    if (count > range) {
+      this.showStatus(
+        `Невозможно сгенерировать ${count} уникальных чисел в диапазоне ${min}-${max}`,
+        "error",
+      );
+      return [];
+    }
+
+    while (numbers.size < count) {
+      const randomNum = Math.floor(Math.random() * range) + min;
+      numbers.add(randomNum);
+    }
+
+    return Array.from(numbers);
   }
 
   renderTree() {
@@ -249,7 +303,7 @@ class RedBlackTreeVisualizer {
     circle.setAttribute("cy", y);
     circle.setAttribute("r", 30);
 
-    // Устанавливаем цвет узла без выделений
+    // Устанавливаем цвет узла
     if (nodeData.color === "red") {
       circle.setAttribute("class", "red-node");
     } else {
@@ -313,7 +367,7 @@ class RedBlackTreeVisualizer {
   }
 
   setButtonsEnabled(enabled) {
-    const buttons = ["insert-btn", "remove-btn", "clear-btn", "example-btn"];
+    const buttons = ["insert-btn", "remove-btn", "clear-btn", "random-btn"];
     buttons.forEach((id) => {
       document.getElementById(id).disabled = !enabled;
     });
@@ -339,6 +393,6 @@ function clearTree() {
   visualizer.clearTree();
 }
 
-function loadExample() {
-  visualizer.loadExample();
+function addRandomValues() {
+  visualizer.addRandomValues();
 }

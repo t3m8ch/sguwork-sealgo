@@ -25,34 +25,52 @@
             .header {
                 text-align: center;
                 margin-bottom: 30px;
-                position: relative;
+            }
+
+            .header-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 20px;
+                min-height: 40px;
+            }
+
+            .header-content {
+                flex: 1;
+                text-align: center;
             }
 
             .header h1 {
                 color: #333;
-                margin-bottom: 10px;
+                margin: 0 0 10px 0;
+                font-size: 2.2em;
+            }
+
+            .header p {
+                margin: 0;
+                color: #666;
+                font-size: 1.1em;
             }
 
             .nav-button {
-                position: absolute;
-                top: 0;
-                right: 0;
                 background: linear-gradient(45deg, #673ab7, #9c27b0);
                 color: white;
                 border: none;
-                padding: 10px 20px;
-                border-radius: 5px;
+                padding: 12px 24px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-size: 14px;
                 font-weight: 500;
                 transition: all 0.3s ease;
                 text-decoration: none;
                 display: inline-block;
+                white-space: nowrap;
+                box-shadow: 0 2px 8px rgba(103, 58, 183, 0.3);
             }
 
             .nav-button:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 6px 20px rgba(103, 58, 183, 0.4);
             }
 
             .controls {
@@ -218,17 +236,43 @@
                 color: #666;
                 margin-top: 5px;
             }
+
+            /* Адаптивность для мобильных устройств */
+            @media (max-width: 768px) {
+                .header-top {
+                    flex-direction: column;
+                    gap: 15px;
+                    text-align: center;
+                }
+
+                .nav-button {
+                    align-self: center;
+                }
+
+                .controls {
+                    flex-direction: column;
+                    align-items: center;
+                }
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <a href="/tracer" class="nav-button">🔍 Открыть трассировщик</a>
-                <h1>🌳 Интерактивный визуализатор красно-черного дерева</h1>
-                <p>
-                    Добавляйте и удаляйте элементы чтобы увидеть, как
-                    красно-черное дерево сохраняет баланс
-                </p>
+                <div class="header-top">
+                    <div></div>
+                    <!-- Пустой div для центрирования -->
+                    <div class="header-content">
+                        <h1>
+                            🌳 Интерактивный визуализатор красно-черного дерева
+                        </h1>
+                        <p>
+                            Добавляйте и удаляйте элементы чтобы увидеть, как
+                            красно-черное дерево сохраняет баланс
+                        </p>
+                    </div>
+                    <a href="/tracer" class="nav-button">🔍 Трассировщик</a>
+                </div>
             </div>
 
             <div class="stats" id="stats">

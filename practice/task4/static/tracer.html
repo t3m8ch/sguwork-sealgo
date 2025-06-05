@@ -25,24 +25,52 @@
             .header {
                 text-align: center;
                 margin-bottom: 30px;
-                position: relative;
+            }
+
+            .header-top {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 20px;
+                min-height: 40px;
+            }
+
+            .header-content {
+                flex: 1;
+                text-align: center;
+            }
+
+            .header h1 {
+                color: #333;
+                margin: 0 0 10px 0;
+                font-size: 2.2em;
+            }
+
+            .header p {
+                margin: 0;
+                color: #666;
+                font-size: 1.1em;
             }
 
             .nav-button {
-                position: absolute;
-                top: 0;
-                right: 0;
                 background: linear-gradient(45deg, #4caf50, #45a049);
                 color: white;
                 border: none;
-                padding: 10px 20px;
-                border-radius: 5px;
+                padding: 12px 24px;
+                border-radius: 8px;
                 cursor: pointer;
                 font-size: 14px;
                 font-weight: 500;
                 transition: all 0.3s ease;
                 text-decoration: none;
                 display: inline-block;
+                white-space: nowrap;
+                box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+            }
+
+            .nav-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
             }
 
             .controls {
@@ -154,17 +182,45 @@
                 font-size: 18px;
                 padding: 50px;
             }
+
+            /* Адаптивность для мобильных устройств */
+            @media (max-width: 768px) {
+                .header-top {
+                    flex-direction: column;
+                    gap: 15px;
+                    text-align: center;
+                }
+
+                .nav-button {
+                    align-self: center;
+                }
+
+                .step-controls {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .step-controls > * {
+                    margin: 5px 0;
+                }
+            }
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
-                <a href="/" class="nav-button">🏠 Вернуться к визуализатору</a>
-                <h1>🔍 Трассировщик красно-черного дерева</h1>
-                <p>
-                    Загрузите файл трассировки для пошагового просмотра операций
-                    с деревом
-                </p>
+                <div class="header-top">
+                    <div></div>
+                    <!-- Пустой div для центрирования -->
+                    <div class="header-content">
+                        <h1>🔍 Трассировщик красно-черного дерева</h1>
+                        <p>
+                            Загрузите файл трассировки для пошагового просмотра
+                            операций с деревом
+                        </p>
+                    </div>
+                    <a href="/" class="nav-button">🏠 Визуализатор</a>
+                </div>
             </div>
 
             <div class="controls">
@@ -221,9 +277,9 @@
             let currentStepIndex = 0;
             let isPlaying = false;
 
-            // Функция загрузки трассировки - ОПРЕДЕЛЕНА В ГЛОБАЛЬНОЙ ОБЛАСТИ
+            // Функция загрузки трассировки
             function loadTrace() {
-                console.log("loadTrace called"); // Для отладки
+                console.log("loadTrace called");
 
                 const fileInput = document.getElementById("trace-file");
                 const file = fileInput.files[0];
@@ -272,7 +328,6 @@
 
                 const step = traceData.steps[stepIndex];
 
-                // Обновить информацию о шаге
                 document.getElementById("operation").textContent =
                     step.operation;
                 document.getElementById("description").textContent =
@@ -280,7 +335,6 @@
                 document.getElementById("highlighted").textContent =
                     step.highlighted_node || "Нет";
 
-                // Отобразить дерево
                 displayTree(step.tree_state, step.highlighted_node);
             }
 
@@ -293,7 +347,6 @@
                     return;
                 }
 
-                // Создать SVG визуализацию дерева
                 container.innerHTML = generateTreeVisualization(
                     treeData,
                     highlightedNode,
@@ -326,7 +379,6 @@
             ) {
                 if (!nodeData) return;
 
-                // Рисуем связи с детьми сначала
                 if (nodeData.left && nodeData.left.value !== undefined) {
                     const leftLine = document.createElementNS(
                         "http://www.w3.org/2000/svg",
@@ -373,7 +425,6 @@
                     );
                 }
 
-                // Создать узел
                 const circle = document.createElementNS(
                     "http://www.w3.org/2000/svg",
                     "circle",
@@ -382,7 +433,6 @@
                 circle.setAttribute("cy", y);
                 circle.setAttribute("r", 25);
 
-                // Установить цвет узла
                 if (nodeData.value === highlightedValue) {
                     circle.setAttribute("class", "highlighted-node");
                 } else if (nodeData.color === "red") {
@@ -393,7 +443,6 @@
 
                 svg.appendChild(circle);
 
-                // Добавить текст значения
                 const text = document.createElementNS(
                     "http://www.w3.org/2000/svg",
                     "text",
@@ -436,7 +485,7 @@
                 function playNextStep() {
                     if (currentStepIndex < traceData.steps.length - 1) {
                         nextStep();
-                        setTimeout(playNextStep, 1500); // 1.5 секунды между шагами
+                        setTimeout(playNextStep, 1500);
                     } else {
                         isPlaying = false;
                         document.getElementById("play-btn").textContent =
@@ -450,9 +499,7 @@
                 setTimeout(playNextStep, 1500);
             }
 
-            // Проверка что все функции загружены
             console.log("All functions loaded successfully");
-            console.log("loadTrace function:", typeof loadTrace);
         </script>
     </body>
 </html>

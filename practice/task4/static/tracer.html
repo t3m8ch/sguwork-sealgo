@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Red-Black Tree Tracer</title>
+        <title>Трассировщик красно-черного дерева</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -67,12 +67,6 @@
                 margin: 10px 0;
             }
 
-            .highlighted-node {
-                fill: #ffeb3b !important;
-                stroke: #f57c00 !important;
-                stroke-width: 3px !important;
-            }
-
             .red-node {
                 fill: #ffcdd2 !important;
                 stroke: #d32f2f !important;
@@ -86,41 +80,35 @@
     </head>
     <body>
         <div class="container">
-            <h1>Red-Black Tree Tracer</h1>
+            <h1>Трассировщик красно-черного дерева</h1>
 
             <div class="controls">
                 <input type="file" id="trace-file" accept=".json" />
-                <button onclick="loadTrace()">Load Trace</button>
+                <button onclick="loadTrace()">Загрузить трассировку</button>
                 <br /><br />
                 <button onclick="previousStep()" id="prev-btn" disabled>
-                    Previous Step
+                    Предыдущий шаг
                 </button>
                 <button onclick="nextStep()" id="next-btn" disabled>
-                    Next Step
+                    Следующий шаг
                 </button>
                 <button onclick="playTrace()" id="play-btn" disabled>
-                    Play All
+                    Воспроизвести все
                 </button>
                 <span
-                    >Step: <span id="current-step">0</span> /
+                    >Шаг: <span id="current-step">0</span> /
                     <span id="total-steps">0</span></span
                 >
             </div>
 
             <div class="step-info" id="step-info" style="display: none">
-                <h3>Current Step</h3>
-                <p><strong>Operation:</strong> <span id="operation"></span></p>
-                <p>
-                    <strong>Description:</strong> <span id="description"></span>
-                </p>
-                <p>
-                    <strong>Highlighted Node:</strong>
-                    <span id="highlighted"></span>
-                </p>
+                <h3>Текущий шаг</h3>
+                <p><strong>Операция:</strong> <span id="operation"></span></p>
+                <p><strong>Описание:</strong> <span id="description"></span></p>
             </div>
 
             <div class="tree-container" id="tree-container">
-                <p>Load a trace file to begin visualization</p>
+                <p>Загрузите файл трассировки для начала визуализации</p>
             </div>
         </div>
 
@@ -134,7 +122,7 @@
                 const file = fileInput.files[0];
 
                 if (!file) {
-                    alert("Please select a trace file");
+                    alert("Пожалуйста, выберите файл трассировки");
                     return;
                 }
 
@@ -146,7 +134,7 @@
                         updateUI();
                         displayStep(0);
                     } catch (error) {
-                        alert("Error parsing JSON: " + error.message);
+                        alert("Ошибка парсинга JSON: " + error.message);
                     }
                 };
                 reader.readAsText(file);
@@ -179,29 +167,24 @@
                     step.operation;
                 document.getElementById("description").textContent =
                     step.description;
-                document.getElementById("highlighted").textContent =
-                    step.highlighted_node || "None";
 
                 // Отобразить дерево
-                displayTree(step.tree_state, step.highlighted_node);
+                displayTree(step.tree_state);
             }
 
-            function displayTree(treeData, highlightedNode) {
+            function displayTree(treeData) {
                 const container = document.getElementById("tree-container");
 
                 if (!treeData) {
-                    container.innerHTML = "<p>Empty tree</p>";
+                    container.innerHTML = "<p>Пустое дерево</p>";
                     return;
                 }
 
                 // Создать SVG визуализацию дерева
-                container.innerHTML = generateTreeVisualization(
-                    treeData,
-                    highlightedNode,
-                );
+                container.innerHTML = generateTreeVisualization(treeData);
             }
 
-            function generateTreeVisualization(nodeData, highlightedValue) {
+            function generateTreeVisualization(nodeData) {
                 if (!nodeData) return "";
 
                 const svg = document.createElementNS(
@@ -212,19 +195,12 @@
                 svg.setAttribute("height", "400");
                 svg.setAttribute("viewBox", "0 0 800 400");
 
-                renderNode(svg, nodeData, 400, 50, 200, highlightedValue);
+                renderNode(svg, nodeData, 400, 50, 200);
 
                 return svg.outerHTML;
             }
 
-            function renderNode(
-                svg,
-                nodeData,
-                x,
-                y,
-                xOffset,
-                highlightedValue,
-            ) {
+            function renderNode(svg, nodeData, x, y, xOffset) {
                 if (!nodeData) return;
 
                 // Создать узел
@@ -237,9 +213,7 @@
                 circle.setAttribute("r", 25);
 
                 // Установить цвет узла
-                if (nodeData.value === highlightedValue) {
-                    circle.setAttribute("class", "highlighted-node");
-                } else if (nodeData.color === "red") {
+                if (nodeData.color === "red") {
                     circle.setAttribute("class", "red-node");
                 } else {
                     circle.setAttribute("class", "black-node");
@@ -281,7 +255,6 @@
                         x - xOffset,
                         y + 80,
                         xOffset / 2,
-                        highlightedValue,
                     );
                 }
 
@@ -305,7 +278,6 @@
                         x + xOffset,
                         y + 80,
                         xOffset / 2,
-                        highlightedValue,
                     );
                 }
             }
@@ -333,7 +305,8 @@
                 if (isPlaying) return;
 
                 isPlaying = true;
-                document.getElementById("play-btn").textContent = "Playing...";
+                document.getElementById("play-btn").textContent =
+                    "Воспроизведение...";
 
                 function playNextStep() {
                     if (currentStepIndex < traceData.steps.length - 1) {
@@ -342,7 +315,7 @@
                     } else {
                         isPlaying = false;
                         document.getElementById("play-btn").textContent =
-                            "Play All";
+                            "Воспроизвести все";
                     }
                 }
 

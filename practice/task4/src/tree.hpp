@@ -89,8 +89,9 @@ public:
         return toJson(root);
     }
 
-    void enableTracing() {
+    void enableTracing(const std::string& dir) {
         tracing_enabled = true;
+        tracingDir = dir;
         trace_steps.clear();
     }
 
@@ -105,7 +106,11 @@ public:
         trace_json["steps"] = trace_steps;
         trace_json["total_steps"] = trace_steps.size();
 
-        std::ofstream file(filename);
+        std::string filenameWithDir = "tracing/" + tracingDir + "/" + filename;
+        std::filesystem::path path(filenameWithDir);
+        std::filesystem::create_directories(path.parent_path());
+
+        std::ofstream file(filenameWithDir);
         file << trace_json.dump(2);
         file.close();
     }
@@ -346,6 +351,7 @@ private:
     bool tracing_enabled = false;
     std::vector<nlohmann::json> trace_steps;
     std::string current_operation;
+    std::string tracingDir;
 
     void recordStep(const std::string& operation, const std::string& description,
                    std::shared_ptr<Node> highlighted_node = nullptr) {

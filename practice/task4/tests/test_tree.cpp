@@ -423,6 +423,47 @@ TEST_CASE("Insert into complex tree maintaining balance", "[insert]") {
     REQUIRE(actualJsonTree == expectedJsonTree);
 }
 
+TEST_CASE("Insert triggering Left-Left case with rotations", "[insert]") {
+    nlohmann::json inputJsonTree = {
+        {"value", 10},
+        {"color", "black"},
+        {"left", {
+            {"value", 5},
+            {"color", "red"},
+            {"left", nullptr},
+            {"right", nullptr}
+        }},
+        {"right", nullptr}
+    };
+
+    RedBlackTree<int> tree(inputJsonTree);
+    tree.enableTracing(currentTime);
+
+    tree.insert(3);
+
+    auto actualJsonTree = tree.toJson();
+
+    nlohmann::json expectedJsonTree = {
+        {"value", 5},
+        {"color", "black"},
+        {"left", {
+            {"value", 3},
+            {"color", "red"},
+            {"left", nullptr},
+            {"right", nullptr}
+        }},
+        {"right", {
+            {"value", 10},
+            {"color", "red"},
+            {"left", nullptr},
+            {"right", nullptr}
+        }}
+    };
+
+    tree.saveTrace("insert_triggering_left_left_case_with_rotations.json");
+    REQUIRE(actualJsonTree == expectedJsonTree);
+}
+
 TEST_CASE("Insert triggering Left-Right case with rotations", "[insert]") {
     nlohmann::json inputJsonTree = {
         {"value", 10},

@@ -25,11 +25,34 @@
             .header {
                 text-align: center;
                 margin-bottom: 30px;
+                position: relative;
             }
 
             .header h1 {
                 color: #333;
                 margin-bottom: 10px;
+            }
+
+            .nav-button {
+                position: absolute;
+                top: 0;
+                right: 0;
+                background: linear-gradient(45deg, #673ab7, #9c27b0);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                display: inline-block;
+            }
+
+            .nav-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             }
 
             .controls {
@@ -200,6 +223,7 @@
     <body>
         <div class="container">
             <div class="header">
+                <a href="/tracer" class="nav-button">🔍 Открыть трассировщик</a>
                 <h1>🌳 Интерактивный визуализатор красно-черного дерева</h1>
                 <p>
                     Добавляйте и удаляйте элементы чтобы увидеть, как

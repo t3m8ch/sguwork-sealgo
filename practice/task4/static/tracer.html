@@ -6,118 +6,225 @@
         <title>Трассировщик красно-черного дерева</title>
         <style>
             body {
-                font-family: Arial, sans-serif;
-                margin: 20px;
-                background-color: #f5f5f5;
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
             }
 
             .container {
                 max-width: 1200px;
                 margin: 0 auto;
                 background: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                position: relative;
+            }
+
+            .nav-button {
+                position: absolute;
+                top: 0;
+                right: 0;
+                background: linear-gradient(45deg, #4caf50, #45a049);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                display: inline-block;
             }
 
             .controls {
                 margin-bottom: 20px;
-                padding: 15px;
+                padding: 20px;
                 background: #f8f9fa;
-                border-radius: 5px;
+                border-radius: 10px;
+            }
+
+            .file-section {
+                margin-bottom: 20px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #e0e0e0;
+            }
+
+            .step-controls {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                flex-wrap: wrap;
             }
 
             .step-info {
                 background: #e3f2fd;
                 padding: 15px;
-                margin: 10px 0;
-                border-radius: 5px;
+                margin: 20px 0;
+                border-radius: 8px;
                 border-left: 4px solid #2196f3;
+                display: none;
             }
 
             .tree-container {
-                border: 1px solid #ddd;
-                padding: 20px;
+                border: 2px solid #e0e0e0;
+                padding: 30px;
                 margin: 20px 0;
-                border-radius: 5px;
+                border-radius: 10px;
                 background: #fafafa;
                 min-height: 400px;
             }
 
             button {
-                background: #2196f3;
+                background: linear-gradient(45deg, #2196f3, #1976d2);
                 color: white;
                 border: none;
-                padding: 10px 20px;
+                padding: 12px 20px;
                 margin: 5px;
-                border-radius: 4px;
+                border-radius: 5px;
                 cursor: pointer;
+                font-size: 16px;
+                font-weight: 500;
+                transition: all 0.3s ease;
             }
 
             button:hover {
-                background: #1976d2;
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             }
 
             button:disabled {
                 background: #ccc;
                 cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            .play-btn {
+                background: linear-gradient(45deg, #4caf50, #45a049);
             }
 
             input[type="file"] {
                 margin: 10px 0;
+                padding: 10px;
+                border: 2px solid #ddd;
+                border-radius: 5px;
+                font-size: 14px;
+                width: 100%;
+                max-width: 300px;
+            }
+
+            .step-counter {
+                background: #fff3e0;
+                padding: 10px 15px;
+                border-radius: 5px;
+                font-weight: 500;
+                color: #e65100;
+            }
+
+            .highlighted-node {
+                fill: #ffeb3b !important;
+                stroke: #f57c00 !important;
+                stroke-width: 3px !important;
             }
 
             .red-node {
                 fill: #ffcdd2 !important;
                 stroke: #d32f2f !important;
+                stroke-width: 2px !important;
             }
 
             .black-node {
                 fill: #e0e0e0 !important;
                 stroke: #424242 !important;
+                stroke-width: 2px !important;
+            }
+
+            .loading-message {
+                text-align: center;
+                color: #666;
+                font-size: 18px;
+                padding: 50px;
             }
         </style>
     </head>
     <body>
         <div class="container">
-            <h1>Трассировщик красно-черного дерева</h1>
-
-            <div class="controls">
-                <input type="file" id="trace-file" accept=".json" />
-                <button onclick="loadTrace()">Загрузить трассировку</button>
-                <br /><br />
-                <button onclick="previousStep()" id="prev-btn" disabled>
-                    Предыдущий шаг
-                </button>
-                <button onclick="nextStep()" id="next-btn" disabled>
-                    Следующий шаг
-                </button>
-                <button onclick="playTrace()" id="play-btn" disabled>
-                    Воспроизвести все
-                </button>
-                <span
-                    >Шаг: <span id="current-step">0</span> /
-                    <span id="total-steps">0</span></span
-                >
+            <div class="header">
+                <a href="/" class="nav-button">🏠 Вернуться к визуализатору</a>
+                <h1>🔍 Трассировщик красно-черного дерева</h1>
+                <p>
+                    Загрузите файл трассировки для пошагового просмотра операций
+                    с деревом
+                </p>
             </div>
 
-            <div class="step-info" id="step-info" style="display: none">
-                <h3>Текущий шаг</h3>
-                <p><strong>Операция:</strong> <span id="operation"></span></p>
-                <p><strong>Описание:</strong> <span id="description"></span></p>
+            <div class="controls">
+                <div class="file-section">
+                    <h3>Загрузка трассировки</h3>
+                    <input type="file" id="trace-file" accept=".json" />
+                    <button onclick="loadTrace()">Загрузить трассировку</button>
+                </div>
+
+                <div class="step-controls">
+                    <button onclick="previousStep()" id="prev-btn" disabled>
+                        ⬅️ Предыдущий шаг
+                    </button>
+                    <button onclick="nextStep()" id="next-btn" disabled>
+                        Следующий шаг ➡️
+                    </button>
+                    <button
+                        onclick="playTrace()"
+                        class="play-btn"
+                        id="play-btn"
+                        disabled
+                    >
+                        ▶️ Воспроизвести все
+                    </button>
+                    <span class="step-counter">
+                        Шаг: <span id="current-step">0</span> /
+                        <span id="total-steps">0</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="step-info" id="step-info">
+                <h3>Информация о шаге</h3>
+                <p><strong>Операция:</strong> <span id="operation">-</span></p>
+                <p>
+                    <strong>Описание:</strong> <span id="description">-</span>
+                </p>
+                <p>
+                    <strong>Выделенный узел:</strong>
+                    <span id="highlighted">-</span>
+                </p>
             </div>
 
             <div class="tree-container" id="tree-container">
-                <p>Загрузите файл трассировки для начала визуализации</p>
+                <div class="loading-message">
+                    📁 Загрузите файл трассировки для начала визуализации
+                </div>
             </div>
         </div>
 
         <script>
+            // Глобальные переменные
             let traceData = null;
             let currentStepIndex = 0;
             let isPlaying = false;
 
+            // Функция загрузки трассировки - ОПРЕДЕЛЕНА В ГЛОБАЛЬНОЙ ОБЛАСТИ
             function loadTrace() {
+                console.log("loadTrace called"); // Для отладки
+
                 const fileInput = document.getElementById("trace-file");
                 const file = fileInput.files[0];
 
@@ -133,7 +240,11 @@
                         currentStepIndex = 0;
                         updateUI();
                         displayStep(0);
+                        document.getElementById("step-info").style.display =
+                            "block";
+                        console.log("Trace loaded successfully:", traceData);
                     } catch (error) {
+                        console.error("JSON parsing error:", error);
                         alert("Ошибка парсинга JSON: " + error.message);
                     }
                 };
@@ -162,29 +273,34 @@
                 const step = traceData.steps[stepIndex];
 
                 // Обновить информацию о шаге
-                document.getElementById("step-info").style.display = "block";
                 document.getElementById("operation").textContent =
                     step.operation;
                 document.getElementById("description").textContent =
                     step.description;
+                document.getElementById("highlighted").textContent =
+                    step.highlighted_node || "Нет";
 
                 // Отобразить дерево
-                displayTree(step.tree_state);
+                displayTree(step.tree_state, step.highlighted_node);
             }
 
-            function displayTree(treeData) {
+            function displayTree(treeData, highlightedNode) {
                 const container = document.getElementById("tree-container");
 
                 if (!treeData) {
-                    container.innerHTML = "<p>Пустое дерево</p>";
+                    container.innerHTML =
+                        '<div class="loading-message">🌱 Пустое дерево</div>';
                     return;
                 }
 
                 // Создать SVG визуализацию дерева
-                container.innerHTML = generateTreeVisualization(treeData);
+                container.innerHTML = generateTreeVisualization(
+                    treeData,
+                    highlightedNode,
+                );
             }
 
-            function generateTreeVisualization(nodeData) {
+            function generateTreeVisualization(nodeData, highlightedValue) {
                 if (!nodeData) return "";
 
                 const svg = document.createElementNS(
@@ -192,16 +308,70 @@
                     "svg",
                 );
                 svg.setAttribute("width", "100%");
-                svg.setAttribute("height", "400");
-                svg.setAttribute("viewBox", "0 0 800 400");
+                svg.setAttribute("height", "500");
+                svg.setAttribute("viewBox", "0 0 1000 500");
 
-                renderNode(svg, nodeData, 400, 50, 200);
+                renderNode(svg, nodeData, 500, 50, 200, highlightedValue);
 
                 return svg.outerHTML;
             }
 
-            function renderNode(svg, nodeData, x, y, xOffset) {
+            function renderNode(
+                svg,
+                nodeData,
+                x,
+                y,
+                xOffset,
+                highlightedValue,
+            ) {
                 if (!nodeData) return;
+
+                // Рисуем связи с детьми сначала
+                if (nodeData.left && nodeData.left.value !== undefined) {
+                    const leftLine = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "line",
+                    );
+                    leftLine.setAttribute("x1", x);
+                    leftLine.setAttribute("y1", y + 25);
+                    leftLine.setAttribute("x2", x - xOffset);
+                    leftLine.setAttribute("y2", y + 75);
+                    leftLine.setAttribute("stroke", "#666");
+                    leftLine.setAttribute("stroke-width", "2");
+                    svg.appendChild(leftLine);
+
+                    renderNode(
+                        svg,
+                        nodeData.left,
+                        x - xOffset,
+                        y + 80,
+                        xOffset / 2,
+                        highlightedValue,
+                    );
+                }
+
+                if (nodeData.right && nodeData.right.value !== undefined) {
+                    const rightLine = document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "line",
+                    );
+                    rightLine.setAttribute("x1", x);
+                    rightLine.setAttribute("y1", y + 25);
+                    rightLine.setAttribute("x2", x + xOffset);
+                    rightLine.setAttribute("y2", y + 75);
+                    rightLine.setAttribute("stroke", "#666");
+                    rightLine.setAttribute("stroke-width", "2");
+                    svg.appendChild(rightLine);
+
+                    renderNode(
+                        svg,
+                        nodeData.right,
+                        x + xOffset,
+                        y + 80,
+                        xOffset / 2,
+                        highlightedValue,
+                    );
+                }
 
                 // Создать узел
                 const circle = document.createElementNS(
@@ -213,7 +383,9 @@
                 circle.setAttribute("r", 25);
 
                 // Установить цвет узла
-                if (nodeData.color === "red") {
+                if (nodeData.value === highlightedValue) {
+                    circle.setAttribute("class", "highlighted-node");
+                } else if (nodeData.color === "red") {
                     circle.setAttribute("class", "red-node");
                 } else {
                     circle.setAttribute("class", "black-node");
@@ -233,53 +405,6 @@
                 text.setAttribute("font-weight", "bold");
                 text.textContent = nodeData.value;
                 svg.appendChild(text);
-
-                // Рекурсивно отрисовать детей
-                if (nodeData.left && nodeData.left.value !== undefined) {
-                    // Линия к левому ребенку
-                    const leftLine = document.createElementNS(
-                        "http://www.w3.org/2000/svg",
-                        "line",
-                    );
-                    leftLine.setAttribute("x1", x);
-                    leftLine.setAttribute("y1", y + 25);
-                    leftLine.setAttribute("x2", x - xOffset);
-                    leftLine.setAttribute("y2", y + 75);
-                    leftLine.setAttribute("stroke", "#666");
-                    leftLine.setAttribute("stroke-width", "2");
-                    svg.appendChild(leftLine);
-
-                    renderNode(
-                        svg,
-                        nodeData.left,
-                        x - xOffset,
-                        y + 80,
-                        xOffset / 2,
-                    );
-                }
-
-                if (nodeData.right && nodeData.right.value !== undefined) {
-                    // Линия к правому ребенку
-                    const rightLine = document.createElementNS(
-                        "http://www.w3.org/2000/svg",
-                        "line",
-                    );
-                    rightLine.setAttribute("x1", x);
-                    rightLine.setAttribute("y1", y + 25);
-                    rightLine.setAttribute("x2", x + xOffset);
-                    rightLine.setAttribute("y2", y + 75);
-                    rightLine.setAttribute("stroke", "#666");
-                    rightLine.setAttribute("stroke-width", "2");
-                    svg.appendChild(rightLine);
-
-                    renderNode(
-                        svg,
-                        nodeData.right,
-                        x + xOffset,
-                        y + 80,
-                        xOffset / 2,
-                    );
-                }
             }
 
             function previousStep() {
@@ -306,7 +431,7 @@
 
                 isPlaying = true;
                 document.getElementById("play-btn").textContent =
-                    "Воспроизведение...";
+                    "⏸️ Воспроизведение...";
 
                 function playNextStep() {
                     if (currentStepIndex < traceData.steps.length - 1) {
@@ -315,7 +440,7 @@
                     } else {
                         isPlaying = false;
                         document.getElementById("play-btn").textContent =
-                            "Воспроизвести все";
+                            "▶️ Воспроизвести все";
                     }
                 }
 
@@ -324,6 +449,10 @@
                 updateUI();
                 setTimeout(playNextStep, 1500);
             }
+
+            // Проверка что все функции загружены
+            console.log("All functions loaded successfully");
+            console.log("loadTrace function:", typeof loadTrace);
         </script>
     </body>
 </html>

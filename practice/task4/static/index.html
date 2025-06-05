@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Интерактивный визуализатор красно-черного дерева</title>
+        <style>
+            body {
+                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                min-height: 100vh;
+            }
+
+            .container {
+                max-width: 1400px;
+                margin: 0 auto;
+                background: white;
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            }
+
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .header h1 {
+                color: #333;
+                margin-bottom: 10px;
+            }
+
+            .controls {
+                display: flex;
+                justify-content: center;
+                gap: 15px;
+                margin-bottom: 30px;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 10px;
+                flex-wrap: wrap;
+            }
+
+            .input-group {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+
+            input[type="number"] {
+                padding: 10px;
+                border: 2px solid #ddd;
+                border-radius: 5px;
+                font-size: 16px;
+                width: 100px;
+            }
+
+            button {
+                background: linear-gradient(45deg, #667eea, #764ba2);
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+            }
+
+            button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            }
+
+            button:disabled {
+                background: #ccc;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+            }
+
+            .clear-btn {
+                background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            }
+
+            .status {
+                text-align: center;
+                padding: 15px;
+                margin: 20px 0;
+                border-radius: 5px;
+                font-weight: 500;
+                display: none;
+            }
+
+            .status.success {
+                background: #d4edda;
+                color: #155724;
+                border: 1px solid #c3e6cb;
+            }
+
+            .status.error {
+                background: #f8d7da;
+                color: #721c24;
+                border: 1px solid #f5c6cb;
+            }
+
+            .tree-container {
+                border: 2px solid #e0e0e0;
+                padding: 30px;
+                margin: 20px 0;
+                border-radius: 10px;
+                background: #fafafa;
+                min-height: 500px;
+                overflow: auto;
+            }
+
+            .loading {
+                text-align: center;
+                padding: 50px;
+                color: #666;
+                font-size: 18px;
+            }
+
+            .red-node {
+                fill: #ffebee !important;
+                stroke: #d32f2f !important;
+                stroke-width: 2px !important;
+            }
+
+            .black-node {
+                fill: #f5f5f5 !important;
+                stroke: #424242 !important;
+                stroke-width: 2px !important;
+            }
+
+            .node-text {
+                font-family: "Consolas", "Monaco", monospace;
+                font-size: 14px;
+                font-weight: bold;
+                text-anchor: middle;
+                dominant-baseline: central;
+            }
+
+            .tree-edge {
+                stroke: #666;
+                stroke-width: 2px;
+            }
+
+            .stats {
+                display: flex;
+                justify-content: space-around;
+                background: #e8f4f8;
+                padding: 15px;
+                border-radius: 10px;
+                margin-bottom: 20px;
+            }
+
+            .stat-item {
+                text-align: center;
+            }
+
+            .stat-value {
+                font-size: 24px;
+                font-weight: bold;
+                color: #2c3e50;
+            }
+
+            .stat-label {
+                color: #7f8c8d;
+                font-size: 14px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🌳 Интерактивный визуализатор красно-черного дерева</h1>
+                <p>
+                    Добавляйте и удаляйте элементы чтобы увидеть, как
+                    красно-черное дерево сохраняет баланс
+                </p>
+            </div>
+
+            <div class="stats" id="stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="node-count">0</div>
+                    <div class="stat-label">Узлов</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="tree-height">0</div>
+                    <div class="stat-label">Высота</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="black-height">0</div>
+                    <div class="stat-label">Черная высота</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="input-group">
+                    <input
+                        type="number"
+                        id="value-input"
+                        placeholder="Введите значение"
+                        min="-1000"
+                        max="1000"
+                    />
+                    <button onclick="insertValue()" id="insert-btn">
+                        Вставить
+                    </button>
+                    <button onclick="removeValue()" id="remove-btn">
+                        Удалить
+                    </button>
+                </div>
+                <button onclick="clearTree()" class="clear-btn" id="clear-btn">
+                    Очистить дерево
+                </button>
+                <button onclick="loadExample()" id="example-btn">
+                    Загрузить пример
+                </button>
+            </div>
+
+            <div class="status" id="status"></div>
+
+            <div class="tree-container" id="tree-container">
+                <div class="loading">
+                    🌱 Дерево пустое. Добавьте значения для начала работы!
+                </div>
+            </div>
+        </div>
+
+        <script src="static/tree-visualizer.js"></script>
+    </body>
+</html>

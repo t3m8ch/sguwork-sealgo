@@ -23,12 +23,42 @@ FetchContent_Declare(json
 )
 FetchContent_MakeAvailable(json)
 
+FetchContent_Declare(
+    asio
+    GIT_REPOSITORY https://github.com/chriskohlhoff/asio.git
+    GIT_TAG asio-1-34-2
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(asio)
+
+set(ASIO_INCLUDE_DIR ${asio_SOURCE_DIR}/asio/include)
+set(ASIO_INCLUDE_DIRS ${ASIO_INCLUDE_DIR})
+
+add_library(asio_interface INTERFACE)
+target_include_directories(asio_interface INTERFACE ${ASIO_INCLUDE_DIR})
+target_compile_definitions(asio_interface INTERFACE ASIO_STANDALONE)
+
+FetchContent_Declare(crow
+    GIT_REPOSITORY https://github.com/CrowCpp/Crow.git
+    GIT_TAG v1.2.1.2
+    GIT_PROGRESS TRUE
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(crow)
+
 add_executable(red-black-tree
     src/main.cpp
 )
 
-target_link_libraries(red-black-tree PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(red-black-tree
+    PRIVATE
+    Crow::Crow
+    nlohmann_json::nlohmann_json
+    pthread
+)
 target_include_directories(red-black-tree PRIVATE src)
+
+file(COPY ${CMAKE_SOURCE_DIR}/static DESTINATION ${CMAKE_BINARY_DIR})
 
 enable_testing()
 add_subdirectory(tests)

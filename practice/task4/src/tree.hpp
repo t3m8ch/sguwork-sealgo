@@ -192,8 +192,10 @@ private:
                         recordStep("fix", "Left rotation completed");
                     }
 
+                    recordStep("fix", "Parent and grandfather recoloring needed");
                     parent->color = Node::Color::BLACK;
                     grandfather->color = Node::Color::RED;
+                    recordStep("fix", "Parent and grandfather recoloring completed");
 
                     recordStep("fix", "Right rotation needed", grandfather);
                     rightRotate(grandfather);
@@ -234,8 +236,10 @@ private:
                         recordStep("fix", "Right rotation completed");
                     }
 
+                    recordStep("fix", "Parent and grandfather recoloring needed");
                     parent->color = Node::Color::BLACK;
                     grandfather->color = Node::Color::RED;
+                    recordStep("fix", "Parent and grandfather recoloring completed");
 
                     recordStep("fix", "Left rotation needed", grandfather);
                     leftRotate(grandfather);

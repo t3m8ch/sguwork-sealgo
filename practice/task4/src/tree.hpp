@@ -231,13 +231,12 @@ private:
 
                     // Если же наш дядя чёрный, то начинаем повороты
 
-                    // Если node -- левый сын
+                    // Если node -- правый сын
                     if (node == parent->right) {
-                        recordStep("fix", "Right rotation needed", node);
-
                         // то мы поворачиваем влево
 
-                        // ОСТОРОЖНО
+                        recordStep("fix", "Right rotation needed", node);
+
                         node = parent;
                         rightRotate(node);
 
@@ -245,8 +244,12 @@ private:
                     }
 
                     recordStep("fix", "Parent and grandfather recoloring needed");
+
+                    parent = node->parent.lock();
+                    grandfather = parent->parent.lock();
                     parent->color = Node::Color::BLACK;
                     grandfather->color = Node::Color::RED;
+
                     recordStep("fix", "Parent and grandfather recoloring completed");
 
                     recordStep("fix", "Left rotation needed", grandfather);
@@ -263,6 +266,7 @@ private:
     void leftRotate(std::shared_ptr<Node> x) {
         // Правый ребёнок становится новым корнем поддерева
         auto y = x->right;
+        recordStep("leftRotate", "auto y = x->right");
 
         // Левый ребёнок y становится правым ребёнком x
         x->right = y->left;
@@ -284,15 +288,18 @@ private:
             // Если мы не смогли найти родителя x, значит x был корнем
             root = y;
         }
+        recordStep("leftRotate", "Update x parent");
 
         // Делаем x левым ребёнком y
         y->left = x;
         x->parent = y;
+        recordStep("leftRotate", "x->left = x and x->parent = y");
     }
 
     void rightRotate(std::shared_ptr<Node> x) {
         // Левый ребёнок становится новым корнем поддерева
         auto y = x->left;
+        recordStep("rightRotate", "y = x->left");
 
         // Правый ребёнок y становится левым ребёнком x
         x->left = y->right;
@@ -305,19 +312,21 @@ private:
 
         // Обновляем родителя x
         if (auto parent = x->parent.lock()) {
-            if (x == parent->right) {
-                parent->right = y;
-            } else {
+            if (x == parent->left) {
                 parent->left = y;
+            } else {
+                parent->right = y;
             }
         } else {
             // Если мы не смогли найти родителя x, значит x был корнем
             root = y;
         }
+        recordStep("rightRotate", "Update x parent");
 
         // Делаем y правым ребёнком x
         y->right = x;
         x->parent = y;
+        recordStep("rightRotate", "x->right = x and x->parent = y");
     }
 
     nlohmann::json toJson(std::shared_ptr<Node> node) const {

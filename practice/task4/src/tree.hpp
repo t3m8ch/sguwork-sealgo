@@ -190,7 +190,6 @@ private:
                         recordStep("fix", "Left rotation needed", node);
 
                         // то мы поворачиваем влево
-                        // ОСТОРОЖНО
                         node = parent;
                         leftRotate(node);
 
@@ -198,6 +197,10 @@ private:
                     }
 
                     recordStep("fix", "Parent and grandfather recoloring needed");
+
+                    parent = node->parent.lock();
+                    grandfather = parent->parent.lock();
+
                     parent->color = Node::Color::BLACK;
                     grandfather->color = Node::Color::RED;
                     recordStep("fix", "Parent and grandfather recoloring completed");

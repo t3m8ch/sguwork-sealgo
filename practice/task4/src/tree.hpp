@@ -231,8 +231,8 @@ private:
 
                     // Если же наш дядя чёрный, то начинаем повороты
 
-                    // Если node -- правый сын
-                    if (node == parent->right) {
+                    // Если node -- левый сын
+                    if (node == parent->left) {
                         // то мы поворачиваем влево
 
                         recordStep("fix", "Right rotation needed", node);

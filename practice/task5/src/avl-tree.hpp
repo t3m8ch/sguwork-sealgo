@@ -169,7 +169,6 @@ private:
     auto buf = node->left;
     node->left = node->right;
     node->right = node->left->right;
-    node->right->left = node->right->right;
     node->left->right = node->left->left;
     node->left->left = buf;
 

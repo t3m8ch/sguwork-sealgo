@@ -8,7 +8,7 @@ std::vector<int> zFunc(const std::string &s) {
   int left = 0;
   int right = 0;
 
-  for (int i = 1; i < s.size() - 1; i++) {
+  for (int i = 1; i < s.size(); i++) {
     zf[i] = std::max(0, std::min(right - i, zf[i - left]));
 
     while (i + zf[i] < s.size() && s[zf[i]] == s[i + zf[i]]) {

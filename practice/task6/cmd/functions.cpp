@@ -1,15 +1,8 @@
 #include "prefix-func.hpp"
+#include "print-vec.hpp"
 #include "z-func.hpp"
 #include <iostream>
 #include <string>
-
-std::string printVec(const std::vector<int> &vec) {
-  std::string result = "";
-  for (size_t i = 0; i < vec.size(); ++i) {
-    result += std::to_string(vec[i]);
-  }
-  return result;
-}
 
 int main() {
   std::string s;

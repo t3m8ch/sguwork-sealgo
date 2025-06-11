@@ -16,3 +16,8 @@ add_executable(kmp
     cmd/kmp-search.cpp
 )
 target_include_directories(kmp PRIVATE internal)
+
+add_executable(bmh
+    cmd/bmh-search.cpp
+)
+target_include_directories(bmh PRIVATE internal)

@@ -73,44 +73,183 @@ void quicksort(std::span<T> arr) {
         quicksort(arr.subspan(left));
     }
 }
+```
 
-int main(int argc, char* argv[]) {
-    bool benchmark_mode = false;
-    if (argc > 1 && std::string(argv[1]) == "--benchmark") {
-        benchmark_mode = true;
-    }
+#pagebreak()
 
-    int n;  // кол-во элементов
-    std::cin >> n;
+== Анализ сложности
 
-    // указываем capacity = n, тем самым сразу аллоцировав место под n элеметов
-    std::vector<int> arr;
-    arr.reserve(n);
++ Рассмотрим этот цикл:
 
-    // заполняем массив
-    for (int i = 0; i < n; i++) {
-        int num;
-        std::cin >> num;
-        arr.push_back(num);
-    }
+  ```cpp
+  while (left <= right) {
+      while (arr[left] < pivot)
+          ++left;
+      while (arr[right] > pivot)
+          --right;
 
-    // сортируем массив
-    if (benchmark_mode) {
-        auto start = std::chrono::high_resolution_clock::now();
-        quicksort(std::span<int>(arr));
-        auto end = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        std::cout << duration.count() << std::endl;
-    } else {
-        quicksort(std::span<int>(arr));
+      if (left <= right) {
+          std::swap(arr[left], arr[right]);
+          ++left;
+          --right;
+      }
+  }
+  ```
 
-        // выводим массив на экран
-        for (int num : arr) {
-            std::cout << num << " ";
+  Асимптотическая сложность этого цикла составляет $O(n)$, так как, во-первых, левый и правый указатель
+  проверяют каждый элемент массива не более одного раза, во-вторых, левый указатель всегда движется влево,
+  а правый --- всегда вправо.
+
+  При этом операция ```cpp std::swap``` имеет асимптотическую сложность $O(1)$.
+
++ При удачном выборе опороного элемента мы разбиваем задачу на две равные подзадачи.
+  Из предыдущего пункта мы выяснили, что сложность разбиения задачи на две подзадачи равна $O(n)$.
+  Следовательно, мы можем построить рекуррентное соотношение для сложности алгоритма:
+
+  $ T(n) = 2T(n/2) + O(n) $
+
+  По теореме о рекурсивном вызове сложность алгоритма составит $O(n log n)$.
+
++ В худшем случае все элементы в задаче окажутся либо больше, либо меньше опорного элемента.
+  А значит у нас будет разбиение на одну подзадачу размерности $n - 1$ и на подзадачу размерности $0$.
+  Из этого следует следующее рекуррентное соотношение:
+
+  $ T(n) = T(n - 1) + T(0) + O(n) = O(n) + O(n - 1) + O(n - 2) + ... + O(1) = O(n^2) $
+
+  А значит в худшем случае сложность алгоритма составит $O(n^2)$.
+
+#pagebreak()
+
+= Пирамидальная сортировка
+
+== Код программы
+
+```cpp
+#include <utility>
+#include <vector>
+#include <iostream>
+#include <span>
+#include <chrono>
+
+// Эта функция "просеивает" узел дерева до тех пор, пока оно не нарушит свойство кучи.
+template<class T>
+requires requires (const T& a, const T& b) {
+   { a < b } -> std::convertible_to<bool>;
+   { a > b } -> std::convertible_to<bool>;
+}
+void siftDown(std::span<T> arr, int nodeIdx) {
+    // Выполняем цикл до тех пор, пока у нас есть дочерние узлы
+    while (2 * nodeIdx + 1 < arr.size()) {
+        // Изначально выбираем левого потомка
+        int childIdx = 2 * nodeIdx + 1;
+
+        // Если правый потомок существует и больше левого, выбираем его
+        if (childIdx + 1 < arr.size() && arr[childIdx + 1] > arr[childIdx]) {
+            childIdx++;
         }
-        std::cout << std::endl;
+
+        // Если потомок больше родителя, меняем их местами и продолжаем просеивание
+        if (arr[childIdx] > arr[nodeIdx]) {
+            std::swap(arr[childIdx], arr[nodeIdx]);
+            nodeIdx = childIdx;
+        } else {
+            // Если потомок меньше или равен родителю, то просеивание завершено
+            break;
+        }
+    }
+}
+
+// Преобразовываем обычный массив в кучу
+template<class T>
+requires requires (const T& a, const T& b) {
+   { a < b } -> std::convertible_to<bool>;
+   { a > b } -> std::convertible_to<bool>;
+}
+void heapify(std::span<T> arr) {
+    for (int i = arr.size() - 1; i >= 0; i--) {
+        siftDown(arr, i);
+    }
+}
+
+
+
+
+// Пирамидальная сортировка
+template<class T>
+requires requires (const T& a, const T& b) {
+   { a < b } -> std::convertible_to<bool>;
+   { a > b } -> std::convertible_to<bool>;
+}
+void heapsort(std::vector<T>& arr) {
+    std::span<T> arrSpan(arr);
+
+    // Сначала мы преобразуем массив в кучу
+    heapify(arrSpan);
+
+    // Потом мы каждый раз будем доставать минимальный элемент кучи и ставить его в конец
+    // При этом элемент, который стал первым, мы просеиваем вниз
+    for (int i = 0; i < arr.size() - 1; i++) {
+        std::swap(arr[0], arr[arrSpan.size() - 1]);
+        arrSpan = arrSpan.first(arrSpan.size() - 1);
+        siftDown(arrSpan, 0);
     }
 }
 ```
 
 == Анализ сложности
+
++ *Проанализируем сложность функции `heapSort`*.
+
+  Массив чисел мы представляем в виде полного бинарного дерева,
+  где элемент $n$ имеет детей под индексами $2n + 1$ и $2n + 2$.
+  Высота полного бинарного дерева равна $log_2 n$.
+
+  В худшем случае функция `siftDown` просеит элемент от корня до самого
+  глубокого листа. А значит асимптотическая сложность функции `siftDown` равна $O(log n)$.
+
++ *В функции `heapify`*
+
+  ```cpp
+  void heapify(std::span<T> arr) {
+      for (int i = arr.size() - 1; i >= 0; i--) {
+          siftDown(arr, i);
+      }
+  }
+  ```
+
+  мы просеиваем каждый элемент массива. Но сложность здесь будет не $O (n log n)$, а $O(n)$, потому что
+  - Половина узлов в полном дереве являются листовыми, а значит для них просеивание не требуется.
+  - На следующем уровне у нас будет $n / 4$ узлов, для которых потребуется просеивание максимум на 1 уровень вниз.
+  - На следующем уровне у нас будет $n / 8$ узлов, для которых потребуется просеивание максимум на 2 уровня вниз.
+  - ...
+  - Для корня в худшем случае потребует просеивание на $log_2 n$ уровней.
+
+  \
+
+  Общее количество работы можно представить в виде следующей суммы:
+
+  $ T = sum_(i=0)^(h-1) = n / (2^(i+1)) * i = n sum_(i=0)^(h-1) = i / (2^(i+1)) = n * (0/2 + 1/4 + 2/8 + 3/16 + ...) $
+
+  Заметим, что ряд $sum_(i=1)^infinity i / 2^i$ сходится к 2, а значит $T < 2n => T = O(n)$
+
++ *Теперь проанализируем сложность функции `heapSort`*.
+
+  ```cpp
+  void heapsort(std::vector<T>& arr) {
+      std::span<T> arrSpan(arr);
+      heapify(arrSpan);
+      for (int i = 0; i < arr.size() - 1; i++) {
+          std::swap(arr[0], arr[arrSpan.size() - 1]);
+          arrSpan = arrSpan.first(arrSpan.size() - 1);
+          siftDown(arrSpan, 0);
+      }
+  }
+  ```
+
+  + Сначала мы делаем `heapify`, который, как мы выяснили ранее, работает за $O(n)$.
+  + Затем мы делаем $n - 1$ итераций, в каждой из которой мы делаем:
+    + `std::swap`, работающий за $O(1)$
+    + `siftDown`, работающий, как мы выяснили ранее, за $O(log n)$
+
+  *Итоговая сложность алгоритма:*
+  $ O(n) + O(n - 1) O(log n) = O(n) + O(n log n) = O(n log n) $
